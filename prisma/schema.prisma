@@ -1,0 +1,310 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  todos         Todo[]
+  notes         Note[]
+  noteTags      NoteTag[]
+  ideas         Idea[]
+  conversations Conversation[]
+  projects      Project[]
+  dailyFocus    DailyFocus[]
+  designers     Designer[]
+
+  @@map("users")
+}
+
+// ─── Todos ────────────────────────────────────────────────────────────────────
+
+enum TodoStatus {
+  TODO
+  INPROGRESS
+  AWAITING
+  COMPLETE
+}
+
+model Todo {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  title       String
+  description String?
+  category    String
+  status      TodoStatus @default(TODO)
+  dueDate     DateTime?  @map("due_date") @db.Date
+  urgent      Boolean    @default(false)
+  sortOrder   Int        @default(0) @map("sort_order")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("todos")
+}
+
+// ─── Notes & Ideas ────────────────────────────────────────────────────────────
+
+model Note {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  project   String
+  body      String
+  summary   String?
+  date      DateTime @db.Date
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags NoteTagAssignment[]
+
+  @@map("notes")
+}
+
+model NoteTag {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  name   String
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignments NoteTagAssignment[]
+
+  @@unique([userId, name])
+  @@map("note_tags")
+}
+
+model NoteTagAssignment {
+  noteId String @map("note_id")
+  tagId  String @map("tag_id")
+
+  note Note    @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tag  NoteTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, tagId])
+  @@map("note_tag_assignments")
+}
+
+model Idea {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  category  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ideas")
+}
+
+// ─── Conversations ────────────────────────────────────────────────────────────
+
+model Conversation {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  topic       String
+  description String?
+  person      String
+  done        Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("conversations")
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+
+enum ProjectPhase {
+  DISCOVERY
+  DESIGN
+  DEV_HANDOFF
+  IN_DEVELOPMENT
+  LIVE
+  ON_HOLD
+}
+
+enum ProjectStatus {
+  ON_TRACK
+  AT_RISK
+  BLOCKED
+  COMPLETE
+}
+
+model Project {
+  id        String        @id @default(uuid())
+  userId    String        @map("user_id")
+  name      String
+  phase     ProjectPhase  @default(DISCOVERY)
+  status    ProjectStatus @default(ON_TRACK)
+  attention Boolean       @default(false)
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  decisions ProjectDecision[]
+
+  @@map("projects")
+}
+
+model ProjectDecision {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  text      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_decisions")
+}
+
+// ─── Daily Focus ──────────────────────────────────────────────────────────────
+
+model DailyFocus {
+  id     String   @id @default(uuid())
+  userId String   @map("user_id")
+  date   DateTime @db.Date
+  text   String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("daily_focus")
+}
+
+// ─── Team Coaching ────────────────────────────────────────────────────────────
+
+enum DreyfusStage {
+  NOVICE
+  ADVANCED_BEGINNER
+  COMPETENT
+  PROFICIENT
+  EXPERT
+}
+
+model Designer {
+  id           String        @id @default(uuid())
+  userId       String        @map("user_id")
+  name         String
+  role         String
+  roleLevel    String        @map("role_level")
+  dreyfusStage DreyfusStage? @map("dreyfus_stage")
+  avatarClass  String        @default("avatar-a") @map("avatar_class")
+  nextOneOnOne DateTime?     @map("next_one_on_one") @db.Date
+  sortOrder    Int           @default(0) @map("sort_order")
+  features     Json          @default("{}")
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills   DesignerSkill[]
+  sessions DesignerSession[]
+  goals    DesignerGoal[]
+  feedback DesignerFeedback[]
+  topics   DesignerTopic[]
+  notes    DesignerNote[]
+
+  @@map("designers")
+}
+
+model DesignerSkill {
+  id         String @id @default(uuid())
+  designerId String @map("designer_id")
+  skillName  String @map("skill_name")
+  value      Int    @default(0)
+
+  designer Designer @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@unique([designerId, skillName])
+  @@map("designer_skills")
+}
+
+enum SessionFlag {
+  POSITIVE
+  DEVELOPMENT
+  COACHING
+  FOLLOWUP
+}
+
+model DesignerSession {
+  id         String       @id @default(uuid())
+  designerId String       @map("designer_id")
+  date       DateTime     @db.Date
+  notes      String
+  flag       SessionFlag?
+  summary    String?
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  designer Designer @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@map("designer_sessions")
+}
+
+enum GoalStatus {
+  ON_TRACK
+  AT_RISK
+  COMPLETE
+}
+
+model DesignerGoal {
+  id              String     @id @default(uuid())
+  designerId      String     @map("designer_id")
+  title           String
+  description     String?
+  meetsCriteria   String?    @map("meets_criteria")
+  exceedsCriteria String?    @map("exceeds_criteria")
+  timeline        String
+  status          GoalStatus @default(ON_TRACK)
+  createdAt       DateTime   @default(now()) @map("created_at")
+
+  designer Designer @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@map("designer_goals")
+}
+
+model DesignerFeedback {
+  id            String   @id @default(uuid())
+  designerId    String   @map("designer_id")
+  sourceName    String   @map("source_name")
+  date          DateTime @db.Date
+  body          String
+  imageUrl      String?  @map("image_url")
+  extractedText String?  @map("extracted_text")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  designer Designer @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@map("designer_feedback")
+}
+
+model DesignerTopic {
+  id         String   @id @default(uuid())
+  designerId String   @map("designer_id")
+  title      String
+  discussed  Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  designer Designer @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@map("designer_topics")
+}
+
+model DesignerNote {
+  id         String   @id @default(uuid())
+  designerId String   @map("designer_id")
+  body       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  designer Designer @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@map("designer_notes")
+}
