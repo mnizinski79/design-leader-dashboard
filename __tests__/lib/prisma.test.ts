@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { prisma } from "@/lib/prisma"
 
 describe("prisma singleton", () => {
