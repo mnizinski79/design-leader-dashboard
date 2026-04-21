@@ -53,6 +53,7 @@ export function KanbanBoard({ initialTodos }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingTodo, setEditingTodo] = useState<TodoItem | null>(null)
   const dragStartStatusRef = useRef<TodoStatus | null>(null)
+  const boardSnapshotRef = useRef<Board | null>(null)
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
@@ -79,6 +80,7 @@ export function KanbanBoard({ initialTodos }: Props) {
   function onDragStart({ active }: DragStartEvent) {
     setActiveId(active.id as string)
     dragStartStatusRef.current = findContainer(active.id)
+    boardSnapshotRef.current = board
   }
 
   function onDragOver({ active, over }: DragOverEvent) {
@@ -130,13 +132,21 @@ export function KanbanBoard({ initialTodos }: Props) {
         })
       } catch {
         toast.error("Failed to save order")
+        if (boardSnapshotRef.current) setBoard(boardSnapshotRef.current)
       }
     } else {
       // Cross-column: state already updated by onDragOver, just persist to DB
       if (currentContainer === "COMPLETE") {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
       }
-      const sortOrder = board[currentContainer].findIndex(t => t.id === active.id)
+
+      // Read sortOrder from latest committed state via functional updater
+      let sortOrder = -1
+      setBoard(prev => {
+        sortOrder = prev[currentContainer].findIndex(t => t.id === active.id)
+        return prev  // no change to state, just reading it reliably
+      })
+
       try {
         await fetch(`/api/todos/${active.id}`, {
           method: "PATCH",
@@ -145,6 +155,7 @@ export function KanbanBoard({ initialTodos }: Props) {
         })
       } catch {
         toast.error("Failed to save")
+        if (boardSnapshotRef.current) setBoard(boardSnapshotRef.current)
       }
     }
   }
