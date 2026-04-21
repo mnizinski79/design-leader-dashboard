@@ -118,6 +118,14 @@ describe("DELETE /api/ideas/[id]", () => {
     expect(await prisma.idea.findUnique({ where: { id: idea.id } })).toBeNull()
   })
 
+  it("returns 404 when idea does not exist", async () => {
+    const res = await DELETE(
+      makeReq("http://localhost/api/ideas/00000000-0000-0000-0000-000000000000", "DELETE"),
+      { params: { id: "00000000-0000-0000-0000-000000000000" } }
+    )
+    expect(res.status).toBe(404)
+  })
+
   it("returns 403 for another user's idea", async () => {
     const other = await prisma.user.create({
       data: { name: "Other2", email: "other2.ideas@test.example", passwordHash: "hash" },
