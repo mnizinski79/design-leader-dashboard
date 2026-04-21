@@ -4,7 +4,10 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 const reorderSchema = z.object({
-  ids: z.array(z.string().uuid()).min(1).max(500),
+  ids: z.array(z.string().uuid()).min(1).max(500).refine(
+    arr => new Set(arr).size === arr.length,
+    { message: "ids must be unique" }
+  ),
 })
 
 export async function PATCH(req: Request) {
