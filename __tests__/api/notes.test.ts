@@ -90,6 +90,21 @@ describe("GET /api/notes", () => {
     expect(body[0].project).toBe("Alpha")
   })
 
+  it("filters by tag query param", async () => {
+    const note = await prisma.note.create({
+      data: { userId: testUserId, title: "Tagged note", project: "P", body: "x", date: new Date("2026-04-21") },
+    })
+    await prisma.noteTagAssignment.create({ data: { noteId: note.id, tagId } })
+    await prisma.note.create({
+      data: { userId: testUserId, title: "Untagged note", project: "P", body: "x", date: new Date("2026-04-21") },
+    })
+
+    const res = await GET(makeReq("http://localhost/api/notes?tag=design", "GET"))
+    const body = await res.json()
+    expect(body).toHaveLength(1)
+    expect(body[0].title).toBe("Tagged note")
+  })
+
   it("includes tag names in each note", async () => {
     const note = await prisma.note.create({
       data: { userId: testUserId, title: "Tagged", project: "P", body: "x", date: new Date("2026-04-21") },

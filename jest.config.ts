@@ -10,6 +10,7 @@ const config: Config = {
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   testPathIgnorePatterns: ["/node_modules/"],
+  maxWorkers: 1,
 }
 
 export default createJestConfig(config)

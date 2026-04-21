@@ -7,7 +7,7 @@ const createSchema = z.object({
   title: z.string().min(1).max(200),
   project: z.string().min(1).max(100),
   body: z.string().min(1),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v => !isNaN(new Date(v).getTime()), { message: "Invalid date" }),
   tagIds: z.array(z.string().uuid()).optional(),
 })
 
@@ -65,6 +65,16 @@ export async function POST(req: Request) {
   }
 
   const { title, project, body: noteBody, date, tagIds } = parsed.data
+
+  if (tagIds?.length) {
+    const ownedTags = await prisma.noteTag.findMany({
+      where: { id: { in: tagIds }, userId: session.user.id },
+      select: { id: true },
+    })
+    if (ownedTags.length !== tagIds.length) {
+      return NextResponse.json({ error: "One or more tags not found" }, { status: 422 })
+    }
+  }
 
   const note = await prisma.note.create({
     data: {
