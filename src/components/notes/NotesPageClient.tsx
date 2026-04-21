@@ -49,7 +49,7 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
 
   function handleDeleteNote(id: string) {
     setNotes(prev => prev.filter(n => n.id !== id))
-    setSelectedNoteId(null)
+    if (id === selectedNoteId) setSelectedNoteId(null)
   }
 
   function handleTagsChange(updatedTags: NoteTagItem[]) {
@@ -61,6 +61,7 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
       {/* Tabs */}
       <div className="flex border-b border-slate-200 shrink-0">
         <button
+          type="button"
           onClick={() => setActiveTab("notes")}
           className={
             activeTab === "notes"
@@ -71,6 +72,7 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
           Notes
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab("ideas")}
           className={
             activeTab === "ideas"

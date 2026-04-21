@@ -5,8 +5,8 @@ import { prisma } from "@/lib/prisma"
 
 const createSchema = z.object({
   title: z.string().min(1).max(200),
-  project: z.string().min(1).max(100),
-  body: z.string().min(1),
+  project: z.string().max(100),
+  body: z.string(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v => !isNaN(new Date(v).getTime()), { message: "Invalid date" }),
   tagIds: z.array(z.string().uuid()).optional(),
 })
