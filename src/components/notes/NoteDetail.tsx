@@ -16,9 +16,13 @@ function CopyPromptButton({ label, buildPrompt }: { label: string; buildPrompt: 
   const [copied, setCopied] = useState(false)
 
   async function handleClick() {
-    await navigator.clipboard.writeText(buildPrompt())
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(buildPrompt())
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // clipboard permission denied or not available
+    }
   }
 
   return (
@@ -38,12 +42,13 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
   const [body, setBody] = useState(note.body)
   const [saving, setSaving] = useState(false)
 
+  // Reset local state when switching to a different note
   useEffect(() => {
     setTitle(note.title)
     setProject(note.project)
     setDate(note.date)
     setBody(note.body)
-  }, [note.id, note.title, note.project, note.date, note.body])
+  }, [note.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const save = useCallback(async (patch: Partial<{ title: string; project: string; date: string; body: string }>) => {
     setSaving(true)
@@ -62,7 +67,7 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
     }
   }, [note.id, onUpdate])
 
-  async function handleTagsChange(tagIds: string[]) {
+  const handleTagsChange = useCallback(async (tagIds: string[]) => {
     const res = await fetch(`/api/notes/${note.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -72,29 +77,32 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
       const updated = await res.json()
       onUpdate(updated)
     }
-  }
+  }, [note.id, onUpdate])
 
-  async function handleCreateTag(name: string): Promise<NoteTagItem> {
+  const handleCreateTag = useCallback(async (name: string): Promise<NoteTagItem> => {
     const res = await fetch("/api/tags", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),
     })
+    if (!res.ok) throw new Error("Failed to create tag")
     const tag = await res.json()
     onTagsChange([...allTags, tag])
     return tag
-  }
+  }, [allTags, onTagsChange])
 
   async function handleDelete() {
     if (!confirm(`Delete note "${note.title}"?`)) return
-    await fetch(`/api/notes/${note.id}`, { method: "DELETE" })
-    onDelete(note.id)
+    const res = await fetch(`/api/notes/${note.id}`, { method: "DELETE" })
+    if (res.ok) onDelete(note.id)
   }
 
   return (
     <div className="flex flex-col h-full p-6 space-y-4">
       <div className="flex items-start justify-between gap-4">
         <input
+          id="note-title"
+          aria-label="Note title"
           className="flex-1 text-xl font-semibold text-slate-900 border-0 border-b border-transparent hover:border-slate-200 focus:border-blue-400 focus:outline-none py-1 bg-transparent"
           value={title}
           onChange={e => setTitle(e.target.value)}
@@ -111,8 +119,9 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Project</label>
+          <label htmlFor="note-project" className="text-xs font-medium text-slate-400 uppercase tracking-wide">Project</label>
           <input
+            id="note-project"
             className="w-full text-sm text-slate-700 border border-slate-200 rounded-lg px-3 py-1.5 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-300"
             value={project}
             onChange={e => setProject(e.target.value)}
@@ -121,8 +130,9 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
           />
         </div>
         <div>
-          <label className="text-xs font-medium text-slate-400 uppercase tracking-wide">Date</label>
+          <label htmlFor="note-date" className="text-xs font-medium text-slate-400 uppercase tracking-wide">Date</label>
           <input
+            id="note-date"
             type="date"
             className="w-full text-sm text-slate-700 border border-slate-200 rounded-lg px-3 py-1.5 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-300"
             value={date}
@@ -145,8 +155,9 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
       </div>
 
       <div className="flex-1 flex flex-col">
-        <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Notes</label>
+        <label htmlFor="note-body" className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Notes</label>
         <textarea
+          id="note-body"
           className="flex-1 text-sm text-slate-800 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none font-mono leading-relaxed"
           value={body}
           onChange={e => setBody(e.target.value)}
@@ -161,13 +172,13 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
           <CopyPromptButton
             label="Copy AI Summary Prompt"
             buildPrompt={() =>
-              `Please summarize the following note and extract the key insights and decisions:\n\nTitle: ${note.title}\nProject: ${note.project}\nDate: ${note.date}\n\n${note.body}`
+              `Please summarize the following note and extract the key insights and decisions:\n\nTitle: ${title}\nProject: ${project}\nDate: ${date}\n\n${body}`
             }
           />
           <CopyPromptButton
             label="Copy Extract Actions Prompt"
             buildPrompt={() =>
-              `Please extract all action items, tasks, and next steps from the following note. Format them as a numbered list:\n\nTitle: ${note.title}\nProject: ${note.project}\n\n${note.body}`
+              `Please extract all action items, tasks, and next steps from the following note. Format them as a numbered list:\n\nTitle: ${title}\nProject: ${project}\n\n${body}`
             }
           />
         </div>
