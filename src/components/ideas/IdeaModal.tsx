@@ -2,14 +2,7 @@
 
 import { useState } from "react"
 import type { IdeaItem } from "@/types"
-
-const CATEGORIES = [
-  "Process Improvement",
-  "Team Culture",
-  "Tool / Technology",
-  "Career Development",
-  "Other",
-]
+import { IDEA_CATEGORIES } from "./categories"
 
 interface Props {
   onClose: () => void
@@ -18,24 +11,32 @@ interface Props {
 
 export function IdeaModal({ onClose, onCreated }: Props) {
   const [title, setTitle] = useState("")
-  const [category, setCategory] = useState(CATEGORIES[0])
+  const [category, setCategory] = useState<string>(IDEA_CATEGORIES[0])
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!title.trim()) return
 
     setSubmitting(true)
+    setError(null)
     try {
       const res = await fetch("/api/ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: title.trim(), category }),
       })
-      if (!res.ok) throw new Error("Failed to create idea")
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        setError(body.error ?? "Failed to save idea")
+        return
+      }
       const idea: IdeaItem = await res.json()
       onCreated(idea)
       onClose()
+    } catch {
+      setError("Something went wrong. Please try again.")
     } finally {
       setSubmitting(false)
     }
@@ -77,11 +78,12 @@ export function IdeaModal({ onClose, onCreated }: Props) {
               onChange={e => setCategory(e.target.value)}
               className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
             >
-              {CATEGORIES.map(cat => (
+              {IDEA_CATEGORIES.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
           </div>
+          {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"

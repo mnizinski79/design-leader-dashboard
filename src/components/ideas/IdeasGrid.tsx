@@ -4,14 +4,7 @@ import { useState } from "react"
 import type { IdeaItem } from "@/types"
 import { IdeaCard } from "./IdeaCard"
 import { IdeaModal } from "./IdeaModal"
-
-const CATEGORIES = [
-  "Process Improvement",
-  "Team Culture",
-  "Tool / Technology",
-  "Career Development",
-  "Other",
-]
+import { IDEA_CATEGORIES } from "./categories"
 
 interface Props {
   initialIdeas: IdeaItem[]
@@ -27,9 +20,13 @@ export function IdeasGrid({ initialIdeas }: Props) {
   }
 
   async function handleDelete(id: string) {
-    const res = await fetch(`/api/ideas/${id}`, { method: "DELETE" })
-    if (res.ok) {
-      setIdeas(prev => prev.filter(i => i.id !== id))
+    try {
+      const res = await fetch(`/api/ideas/${id}`, { method: "DELETE" })
+      if (res.ok) {
+        setIdeas(prev => prev.filter(i => i.id !== id))
+      }
+    } catch {
+      // network error — idea remains in list
     }
   }
 
@@ -39,7 +36,6 @@ export function IdeasGrid({ initialIdeas }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-slate-800">Ideas</h2>
         <button
@@ -50,19 +46,19 @@ export function IdeasGrid({ initialIdeas }: Props) {
         </button>
       </div>
 
-      {/* Category filter */}
+      <label className="sr-only" htmlFor="category-filter">Filter by category</label>
       <select
+        id="category-filter"
         value={categoryFilter}
         onChange={e => setCategoryFilter(e.target.value)}
         className="self-start text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
       >
         <option value="">All categories</option>
-        {CATEGORIES.map(cat => (
+        {IDEA_CATEGORIES.map(cat => (
           <option key={cat} value={cat}>{cat}</option>
         ))}
       </select>
 
-      {/* Grid */}
       {filtered.length === 0 ? (
         <p className="text-sm text-slate-400 py-8 text-center">No ideas yet</p>
       ) : (
@@ -73,7 +69,6 @@ export function IdeasGrid({ initialIdeas }: Props) {
         </div>
       )}
 
-      {/* Modal */}
       {showModal && (
         <IdeaModal
           onClose={() => setShowModal(false)}
