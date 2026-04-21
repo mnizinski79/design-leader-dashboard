@@ -69,6 +69,7 @@ export function TagSelector({ allTags, selectedTagIds, onChange, onCreateTag }: 
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
+          onBlur={() => setTimeout(() => setInput(""), 150)}
           placeholder="Add tag..."
           className="w-full text-xs border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300"
         />
