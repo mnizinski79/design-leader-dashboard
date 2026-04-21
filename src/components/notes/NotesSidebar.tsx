@@ -80,8 +80,8 @@ export function NotesSidebar({ notes, allTags, selectedId, onSelect, onNew }: Pr
               key={note.id}
               onClick={() => onSelect(note.id)}
               className={cn(
-                "w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors",
-                selectedId === note.id && "bg-blue-50 border-l-2 border-l-blue-500"
+                "w-full text-left px-4 py-3 border-b border-slate-100 border-l-2 border-l-transparent hover:bg-slate-50 transition-colors",
+                selectedId === note.id && "bg-blue-50 border-l-blue-500"
               )}
             >
               <p className="text-sm font-medium text-slate-800 truncate">{note.title}</p>
