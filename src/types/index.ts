@@ -34,3 +34,29 @@ export interface DesignerForPulse {
   role: string
   nextOneOnOne: string | null
 }
+
+export interface NoteTagItem {
+  id: string
+  name: string
+}
+
+export interface NoteItem {
+  id: string
+  userId: string
+  title: string
+  project: string
+  body: string
+  summary: string | null
+  date: string
+  createdAt: string
+  updatedAt: string
+  tags: NoteTagItem[]
+}
+
+export interface IdeaItem {
+  id: string
+  userId: string
+  title: string
+  category: string
+  createdAt: string
+}
