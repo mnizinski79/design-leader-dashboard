@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
+import { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -46,8 +47,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     where: { id: params.id },
     include: { tags: { include: { tag: true } } },
   })
+  if (!note) return NextResponse.json({ error: "Not Found" }, { status: 404 })
 
-  return NextResponse.json(serializeNote(note!))
+  return NextResponse.json(serializeNote(note))
 }
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
@@ -57,36 +59,52 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const resolved = await resolveNote(params.id, session.user.id)
   if ("error" in resolved) return NextResponse.json({ error: resolved.error }, { status: resolved.status })
 
-  let body: unknown
-  try { body = await req.json() } catch {
+  let payload: unknown
+  try { payload = await req.json() } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 422 })
   }
 
-  const parsed = updateSchema.safeParse(body)
+  const parsed = updateSchema.safeParse(payload)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 422 })
   }
 
   const { tagIds, date, ...rest } = parsed.data
 
-  const note = await prisma.$transaction(async (tx) => {
-    if (tagIds !== undefined) {
-      await tx.noteTagAssignment.deleteMany({ where: { noteId: params.id } })
-    }
-    return tx.note.update({
-      where: { id: params.id },
-      data: {
-        ...rest,
-        ...(date ? { date: new Date(date) } : {}),
-        ...(tagIds !== undefined && tagIds.length > 0
-          ? { tags: { create: tagIds.map(tagId => ({ tagId })) } }
-          : {}),
-      },
-      include: { tags: { include: { tag: true } } },
+  if (tagIds !== undefined && tagIds.length > 0) {
+    const ownedTags = await prisma.noteTag.findMany({
+      where: { id: { in: tagIds }, userId: session.user.id },
+      select: { id: true },
     })
-  })
+    if (ownedTags.length !== tagIds.length) {
+      return NextResponse.json({ error: "One or more tags not found" }, { status: 422 })
+    }
+  }
 
-  return NextResponse.json(serializeNote(note))
+  try {
+    const note = await prisma.$transaction(async (tx) => {
+      if (tagIds !== undefined) {
+        await tx.noteTagAssignment.deleteMany({ where: { noteId: params.id } })
+      }
+      return tx.note.update({
+        where: { id: params.id },
+        data: {
+          ...rest,
+          ...(date ? { date: new Date(date) } : {}),
+          ...(tagIds !== undefined && tagIds.length > 0
+            ? { tags: { create: tagIds.map(tagId => ({ tagId })) } }
+            : {}),
+        },
+        include: { tags: { include: { tag: true } } },
+      })
+    })
+    return NextResponse.json(serializeNote(note))
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {
+      return NextResponse.json({ error: "Not Found" }, { status: 404 })
+    }
+    throw e
+  }
 }
 
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
@@ -96,6 +114,13 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   const resolved = await resolveNote(params.id, session.user.id)
   if ("error" in resolved) return NextResponse.json({ error: resolved.error }, { status: resolved.status })
 
-  await prisma.note.delete({ where: { id: params.id } })
+  try {
+    await prisma.note.delete({ where: { id: params.id } })
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {
+      return NextResponse.json({ error: "Not Found" }, { status: 404 })
+    }
+    throw e
+  }
   return new NextResponse(null, { status: 204 })
 }
