@@ -9,6 +9,7 @@ const config: Config = {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  testPathIgnorePatterns: ["/node_modules/", "/.worktrees/"],
 }
 
 export default createJestConfig(config)
