@@ -6,8 +6,8 @@ import { prisma } from "@/lib/prisma"
 
 const updateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
-  project: z.string().min(1).max(100).optional(),
-  body: z.string().min(1).optional(),
+  project: z.string().max(100).optional(),
+  body: z.string().optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(v => !isNaN(new Date(v).getTime()), { message: "Invalid date" }).optional(),
   summary: z.string().nullable().optional(),
   tagIds: z.array(z.string().uuid()).optional(),
@@ -40,11 +40,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const resolved = await resolveNote(params.id, session.user.id)
-  if ("error" in resolved) return NextResponse.json({ error: resolved.error }, { status: resolved.status })
-
   const note = await prisma.note.findUnique({
-    where: { id: params.id },
+    where: { id: params.id, userId: session.user.id },
     include: { tags: { include: { tag: true } } },
   })
   if (!note) return NextResponse.json({ error: "Not Found" }, { status: 404 })

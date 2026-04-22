@@ -187,7 +187,7 @@ describe("GET /api/notes/[id]", () => {
     expect(res.status).toBe(404)
   })
 
-  it("returns 403 for another user's note", async () => {
+  it("returns 404 for another user's note", async () => {
     const other = await prisma.user.create({
       data: { name: "Other2", email: "other2.notes@test.example", passwordHash: "hash" },
     })
@@ -198,7 +198,7 @@ describe("GET /api/notes/[id]", () => {
       makeReq(`http://localhost/api/notes/${note.id}`, "GET"),
       { params: { id: note.id } }
     )
-    expect(res.status).toBe(403)
+    expect(res.status).toBe(404)
   })
 })
 
