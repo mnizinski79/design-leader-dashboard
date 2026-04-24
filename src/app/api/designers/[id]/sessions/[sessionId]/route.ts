@@ -10,6 +10,10 @@ export async function DELETE(req: Request, { params }: { params: { id: string; s
   if (!designer) return NextResponse.json({ error: "Not found" }, { status: 404 })
   if (designer.userId !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
-  await prisma.designerSession.delete({ where: { id: params.sessionId } })
+  try {
+    await prisma.designerSession.delete({ where: { id: params.sessionId, designerId: params.id } })
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
   return new NextResponse(null, { status: 204 })
 }

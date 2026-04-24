@@ -17,10 +17,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string; go
   const parsed = PatchSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
 
-  const goal = await prisma.designerGoal.update({
-    where: { id: params.goalId },
-    data: { status: parsed.data.status },
-  })
+  let goal
+  try {
+    goal = await prisma.designerGoal.update({
+      where: { id: params.goalId, designerId: params.id },
+      data: { status: parsed.data.status },
+    })
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
 
   return NextResponse.json({ ...goal, createdAt: goal.createdAt.toISOString() })
 }
@@ -33,6 +38,10 @@ export async function DELETE(req: Request, { params }: { params: { id: string; g
   if (!designer) return NextResponse.json({ error: "Not found" }, { status: 404 })
   if (designer.userId !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
 
-  await prisma.designerGoal.delete({ where: { id: params.goalId } })
+  try {
+    await prisma.designerGoal.delete({ where: { id: params.goalId, designerId: params.id } })
+  } catch {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
   return new NextResponse(null, { status: 204 })
 }

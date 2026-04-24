@@ -3,6 +3,46 @@ import { z } from "zod"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
+const INCLUDE_ALL = {
+  skills: true,
+  sessions: { orderBy: { date: "desc" as const } },
+  goals: { orderBy: { createdAt: "desc" as const } },
+  feedback: { orderBy: { date: "desc" as const } },
+  topics: { orderBy: { createdAt: "asc" as const } },
+  notes: { orderBy: { createdAt: "desc" as const } },
+}
+
+function serialize(d: any) {
+  return {
+    ...d,
+    nextOneOnOne: d.nextOneOnOne ? d.nextOneOnOne.toISOString().split("T")[0] : null,
+    createdAt: d.createdAt.toISOString(),
+    sessions: d.sessions.map((s: any) => ({
+      ...s,
+      date: s.date.toISOString().split("T")[0],
+      createdAt: s.createdAt.toISOString(),
+    })),
+    goals: d.goals.map((g: any) => ({
+      ...g,
+      createdAt: g.createdAt.toISOString(),
+    })),
+    feedback: d.feedback.map((f: any) => ({
+      ...f,
+      date: f.date.toISOString().split("T")[0],
+      createdAt: f.createdAt.toISOString(),
+    })),
+    topics: d.topics.map((t: any) => ({
+      ...t,
+      createdAt: t.createdAt.toISOString(),
+    })),
+    notes: d.notes.map((n: any) => ({
+      ...n,
+      createdAt: n.createdAt.toISOString(),
+      updatedAt: n.updatedAt.toISOString(),
+    })),
+  }
+}
+
 const PatchSchema = z.object({
   dreyfusStage: z.enum(["NOVICE", "ADVANCED_BEGINNER", "COMPETENT", "PROFICIENT", "EXPERT"]).optional(),
   nextOneOnOne: z.string().nullable().optional(),
@@ -28,11 +68,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         nextOneOnOne: parsed.data.nextOneOnOne ? new Date(parsed.data.nextOneOnOne) : null,
       }),
     },
+    include: INCLUDE_ALL,
   })
 
-  return NextResponse.json({
-    ...updated,
-    nextOneOnOne: updated.nextOneOnOne ? updated.nextOneOnOne.toISOString().split("T")[0] : null,
-    createdAt: updated.createdAt.toISOString(),
-  })
+  return NextResponse.json(serialize(updated))
 }
