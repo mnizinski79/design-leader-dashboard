@@ -60,3 +60,78 @@ export interface IdeaItem {
   category: string
   createdAt: string
 }
+
+export type DreyfusStage = "NOVICE" | "ADVANCED_BEGINNER" | "COMPETENT" | "PROFICIENT" | "EXPERT"
+export type SessionFlag = "POSITIVE" | "DEVELOPMENT" | "COACHING" | "FOLLOWUP"
+export type GoalStatus = "ON_TRACK" | "AT_RISK" | "COMPLETE"
+
+export interface DesignerSkillItem {
+  id: string
+  skillName: string
+  value: number
+}
+
+export interface DesignerSessionItem {
+  id: string
+  designerId: string
+  date: string
+  notes: string
+  flag: SessionFlag | null
+  summary: string | null
+  createdAt: string
+}
+
+export interface DesignerGoalItem {
+  id: string
+  designerId: string
+  title: string
+  description: string | null
+  meetsCriteria: string | null
+  exceedsCriteria: string | null
+  timeline: string
+  status: GoalStatus
+  createdAt: string
+}
+
+export interface DesignerFeedbackItem {
+  id: string
+  designerId: string
+  sourceName: string
+  date: string
+  body: string
+  createdAt: string
+}
+
+export interface DesignerTopicItem {
+  id: string
+  designerId: string
+  title: string
+  discussed: boolean
+  createdAt: string
+}
+
+export interface DesignerNoteItem {
+  id: string
+  designerId: string
+  body: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DesignerItem {
+  id: string
+  userId: string
+  name: string
+  role: string
+  roleLevel: string
+  dreyfusStage: DreyfusStage | null
+  avatarClass: string
+  nextOneOnOne: string | null
+  createdAt: string
+  skills: DesignerSkillItem[]
+  sessions: DesignerSessionItem[]
+  goals: DesignerGoalItem[]
+  feedback: DesignerFeedbackItem[]
+  topics: DesignerTopicItem[]
+  notes: DesignerNoteItem[]
+}
