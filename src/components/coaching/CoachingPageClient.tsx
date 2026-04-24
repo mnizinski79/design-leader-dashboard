@@ -1,24 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { DesignerItem } from "@/types"
+import { DesignerItem, DesignerSessionItem, DesignerTopicItem, SessionFlag, DreyfusStage } from "@/types"
 import { DesignerList } from "@/components/coaching/DesignerList"
 import { AddDesignerModal } from "@/components/coaching/AddDesignerModal"
+import { CoachingPanel, ActiveTab } from "@/components/coaching/CoachingPanel"
 
 interface Props {
   initialDesigners: DesignerItem[]
 }
-
-type ActiveTab = "skills" | "sessions" | "topics" | "goals" | "feedback" | "notes"
-
-const TABS: { id: ActiveTab; label: string }[] = [
-  { id: "skills", label: "Skills" },
-  { id: "sessions", label: "Sessions" },
-  { id: "topics", label: "Topics" },
-  { id: "goals", label: "Goals" },
-  { id: "feedback", label: "Feedback" },
-  { id: "notes", label: "Notes" },
-]
 
 export function CoachingPageClient({ initialDesigners }: Props) {
   const [designers, setDesigners] = useState<DesignerItem[]>(initialDesigners)
@@ -28,10 +18,93 @@ export function CoachingPageClient({ initialDesigners }: Props) {
 
   const selected = designers.find((d) => d.id === selectedId) ?? null
 
+  function updateDesigner(id: string, patch: Partial<DesignerItem>) {
+    setDesigners((prev) => prev.map((d) => d.id === id ? { ...d, ...patch } : d))
+  }
+
   function handleDesignerCreated(designer: DesignerItem) {
     setDesigners((prev) => [...prev, designer])
     setSelectedId(designer.id)
     setShowAddModal(false)
+  }
+
+  async function handleDreyfusChange(stage: DreyfusStage) {
+    if (!selected) return
+    const res = await fetch(`/api/designers/${selected.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dreyfusStage: stage }),
+    })
+    if (res.ok) {
+      updateDesigner(selected.id, { dreyfusStage: stage })
+    }
+  }
+
+  async function handleSkillsSave(skills: { skillName: string; value: number }[]) {
+    if (!selected) return
+    await fetch(`/api/designers/${selected.id}/skills`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ skills }),
+    })
+  }
+
+  async function handleSessionAdd(data: { date: string; notes: string; flag?: SessionFlag }): Promise<DesignerSessionItem> {
+    if (!selected) throw new Error("No designer selected")
+    const res = await fetch(`/api/designers/${selected.id}/sessions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    })
+    const session: DesignerSessionItem = await res.json()
+    updateDesigner(selected.id, {
+      sessions: [session, ...(selected.sessions ?? [])],
+    })
+    return session
+  }
+
+  async function handleSessionDelete(sessionId: string) {
+    if (!selected) return
+    await fetch(`/api/designers/${selected.id}/sessions/${sessionId}`, { method: "DELETE" })
+    updateDesigner(selected.id, {
+      sessions: (selected.sessions ?? []).filter((s) => s.id !== sessionId),
+    })
+  }
+
+  async function handleTopicAdd(title: string): Promise<DesignerTopicItem> {
+    if (!selected) throw new Error("No designer selected")
+    const res = await fetch(`/api/designers/${selected.id}/topics`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    })
+    const topic: DesignerTopicItem = await res.json()
+    updateDesigner(selected.id, {
+      topics: [...(selected.topics ?? []), topic],
+    })
+    return topic
+  }
+
+  async function handleTopicToggle(topicId: string, discussed: boolean) {
+    if (!selected) return
+    await fetch(`/api/designers/${selected.id}/topics/${topicId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ discussed }),
+    })
+    updateDesigner(selected.id, {
+      topics: (selected.topics ?? []).map((t) =>
+        t.id === topicId ? { ...t, discussed } : t
+      ),
+    })
+  }
+
+  async function handleTopicDelete(topicId: string) {
+    if (!selected) return
+    await fetch(`/api/designers/${selected.id}/topics/${topicId}`, { method: "DELETE" })
+    updateDesigner(selected.id, {
+      topics: (selected.topics ?? []).filter((t) => t.id !== topicId),
+    })
   }
 
   return (
@@ -46,46 +119,25 @@ export function CoachingPageClient({ initialDesigners }: Props) {
         onAdd={() => setShowAddModal(true)}
       />
 
-      {/* Right panel */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {!selected ? (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-            Select a designer or add one to get started
-          </div>
-        ) : (
-          <>
-            {/* Tab bar */}
-            <div className="border-b px-4 flex gap-1 shrink-0">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-3 py-3 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === tab.id
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Tab content placeholder — replaced in Phase 4c & 4d */}
-            <div className="flex-1 p-6 overflow-y-auto">
-              <p className="text-sm text-muted-foreground">
-                {TABS.find((t) => t.id === activeTab)?.label} content for {selected.name} — coming soon
-              </p>
-            </div>
-
-            {/* Coaching Brief footer placeholder — replaced in Phase 4d */}
-            <div className="border-t px-4 py-3 shrink-0 bg-muted/30">
-              <p className="text-xs text-muted-foreground">Coaching Brief footer — Phase 4d</p>
-            </div>
-          </>
-        )}
-      </div>
+      {!selected ? (
+        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+          Select a designer or add one to get started
+        </div>
+      ) : (
+        <CoachingPanel
+          key={selected.id}
+          designer={selected}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onDreyfusChange={handleDreyfusChange}
+          onSkillsSave={handleSkillsSave}
+          onSessionAdd={handleSessionAdd}
+          onSessionDelete={handleSessionDelete}
+          onTopicAdd={handleTopicAdd}
+          onTopicToggle={handleTopicToggle}
+          onTopicDelete={handleTopicDelete}
+        />
+      )}
 
       {showAddModal && (
         <AddDesignerModal
