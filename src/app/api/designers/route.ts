@@ -44,7 +44,7 @@ function serialize(d: any) {
   }
 }
 
-export async function GET() {
+export async function GET(_req: Request) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
