@@ -1,9 +1,16 @@
 "use client"
 
-import { DesignerItem, DesignerSessionItem, DesignerTopicItem, SessionFlag, DreyfusStage } from "@/types"
+import {
+  DesignerItem, DesignerSessionItem, DesignerTopicItem, DesignerGoalItem,
+  DesignerFeedbackItem, DesignerNoteItem, SessionFlag, DreyfusStage, GoalStatus,
+} from "@/types"
 import { SkillsTab } from "@/components/coaching/tabs/SkillsTab"
 import { SessionsTab } from "@/components/coaching/tabs/SessionsTab"
 import { TopicsTab } from "@/components/coaching/tabs/TopicsTab"
+import { GoalsTab } from "@/components/coaching/tabs/GoalsTab"
+import { FeedbackTab } from "@/components/coaching/tabs/FeedbackTab"
+import { NotesTab } from "@/components/coaching/tabs/NotesTab"
+import { CoachingBrief } from "@/components/coaching/CoachingBrief"
 
 export type ActiveTab = "skills" | "sessions" | "topics" | "goals" | "feedback" | "notes"
 
@@ -27,22 +34,27 @@ interface Props {
   onTopicAdd: (title: string) => Promise<DesignerTopicItem>
   onTopicToggle: (topicId: string, discussed: boolean) => Promise<void>
   onTopicDelete: (topicId: string) => Promise<void>
+  onGoalAdd: (data: { title: string; description?: string; meetsCriteria?: string; exceedsCriteria?: string; timeline: string }) => Promise<DesignerGoalItem>
+  onGoalStatusChange: (goalId: string, status: GoalStatus) => Promise<void>
+  onGoalDelete: (goalId: string) => Promise<void>
+  onFeedbackAdd: (data: { sourceName: string; date: string; body: string }) => Promise<DesignerFeedbackItem>
+  onFeedbackDelete: (feedbackId: string) => Promise<void>
+  onNoteAdd: (body: string) => Promise<DesignerNoteItem>
+  onNoteUpdate: (noteId: string, body: string) => Promise<void>
+  onNoteDelete: (noteId: string) => Promise<void>
 }
 
 export function CoachingPanel({
-  designer,
-  activeTab,
-  onTabChange,
-  onDreyfusChange,
-  onSkillsSave,
-  onSessionAdd,
-  onSessionDelete,
-  onTopicAdd,
-  onTopicToggle,
-  onTopicDelete,
+  designer, activeTab, onTabChange,
+  onDreyfusChange, onSkillsSave,
+  onSessionAdd, onSessionDelete,
+  onTopicAdd, onTopicToggle, onTopicDelete,
+  onGoalAdd, onGoalStatusChange, onGoalDelete,
+  onFeedbackAdd, onFeedbackDelete,
+  onNoteAdd, onNoteUpdate, onNoteDelete,
 }: Props) {
   return (
-    <div className="flex-1 flex flex-col min-w-0" key={designer.id}>
+    <div className="flex-1 flex flex-col min-w-0">
       {/* Tab bar */}
       <div className="border-b px-4 flex gap-1 shrink-0">
         {TABS.map((tab) => (
@@ -86,20 +98,32 @@ export function CoachingPanel({
           />
         )}
         {activeTab === "goals" && (
-          <p className="text-sm text-muted-foreground">Goals tab — Phase 4d</p>
+          <GoalsTab
+            designer={designer}
+            onGoalAdd={onGoalAdd}
+            onGoalStatusChange={onGoalStatusChange}
+            onGoalDelete={onGoalDelete}
+          />
         )}
         {activeTab === "feedback" && (
-          <p className="text-sm text-muted-foreground">Feedback tab — Phase 4d</p>
+          <FeedbackTab
+            designer={designer}
+            onFeedbackAdd={onFeedbackAdd}
+            onFeedbackDelete={onFeedbackDelete}
+          />
         )}
         {activeTab === "notes" && (
-          <p className="text-sm text-muted-foreground">Notes tab — Phase 4d</p>
+          <NotesTab
+            designer={designer}
+            onNoteAdd={onNoteAdd}
+            onNoteUpdate={onNoteUpdate}
+            onNoteDelete={onNoteDelete}
+          />
         )}
       </div>
 
-      {/* Coaching Brief footer placeholder */}
-      <div className="border-t px-4 py-3 shrink-0 bg-muted/30">
-        <p className="text-xs text-muted-foreground">Coaching Brief footer — Phase 4d</p>
-      </div>
+      {/* Coaching Brief footer */}
+      <CoachingBrief designer={designer} />
     </div>
   )
 }
