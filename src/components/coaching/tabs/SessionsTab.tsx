@@ -1,13 +1,16 @@
 "use client"
 
 import { useState } from "react"
+import { X } from "lucide-react"
 import { DesignerItem, DesignerSessionItem, SessionFlag } from "@/types"
 import { DREYFUS_DESCRIPTIONS } from "@/components/coaching/lib/coaching-framework"
+import { SplitButton } from "@/components/claude/SplitButton"
 
 interface Props {
   designer: DesignerItem
   onSessionAdd: (data: { date: string; notes: string; flag?: SessionFlag }) => Promise<DesignerSessionItem>
   onSessionDelete: (sessionId: string) => Promise<void>
+  onOpenClaude: (prompt: string, label: string) => void
 }
 
 const FLAG_LABELS: Record<SessionFlag, string> = {
@@ -26,15 +29,13 @@ const FLAG_COLORS: Record<SessionFlag, string> = {
 
 const FLAG_OPTIONS = Object.entries(FLAG_LABELS) as [SessionFlag, string][]
 
-export function SessionsTab({ designer, onSessionAdd, onSessionDelete }: Props) {
+export function SessionsTab({ designer, onSessionAdd, onSessionDelete, onOpenClaude }: Props) {
   const [sessions, setSessions] = useState<DesignerSessionItem[]>(designer.sessions)
   const [showForm, setShowForm] = useState(false)
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0])
   const [notes, setNotes] = useState("")
   const [flag, setFlag] = useState<SessionFlag>("COACHING")
   const [submitting, setSubmitting] = useState(false)
-  const [copied, setCopied] = useState(false)
-
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     if (!date || !notes.trim()) return
@@ -54,7 +55,7 @@ export function SessionsTab({ designer, onSessionAdd, onSessionDelete }: Props) 
     setSessions((prev) => prev.filter((s) => s.id !== sessionId))
   }
 
-  function copyPrompt() {
+  function buildPrompt(): string {
     const stageDesc = designer.dreyfusStage
       ? DREYFUS_DESCRIPTIONS[designer.dreyfusStage]
       : "No stage set"
@@ -64,17 +65,13 @@ export function SessionsTab({ designer, onSessionAdd, onSessionDelete }: Props) 
       ? recent.map((s) => `${s.date} [${s.flag ?? "no flag"}]: ${s.notes}`).join("\n")
       : "No sessions recorded yet."
 
-    const prompt = `Designer: ${designer.name}, ${designer.role} (${designer.roleLevel})
+    return `Designer: ${designer.name}, ${designer.role} (${designer.roleLevel})
 Dreyfus Stage: ${designer.dreyfusStage ?? "Not set"} — ${stageDesc}
 
 Recent Sessions:
 ${sessionText}
 
 Please summarize the key patterns, themes, and growth areas across these recent 1:1 sessions for ${designer.name}. Frame your analysis for a ${designer.dreyfusStage ?? "designer"} on the Dreyfus scale.`
-
-    navigator.clipboard.writeText(prompt).catch(() => {})
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -82,13 +79,11 @@ Please summarize the key patterns, themes, and growth areas across these recent 
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Sessions</h3>
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={copyPrompt}
-            className="text-xs px-3 py-1.5 border rounded-md hover:bg-muted transition-colors"
-          >
-            {copied ? "Copied!" : "Copy AI Summary Prompt"}
-          </button>
+          <SplitButton
+            label="Ask Claude: Summary"
+            onAsk={() => onOpenClaude(buildPrompt(), `Session Summary — ${designer.name}`)}
+            onCopy={() => navigator.clipboard.writeText(buildPrompt()).catch(() => {})}
+          />
           <button
             type="button"
             onClick={() => setShowForm((v) => !v)}
@@ -180,10 +175,10 @@ Please summarize the key patterns, themes, and growth areas across these recent 
             <button
               type="button"
               onClick={() => handleDelete(s.id)}
-              className="text-muted-foreground hover:text-red-600 transition-colors shrink-0 text-xs"
+              className="text-muted-foreground hover:text-red-600 transition-colors shrink-0"
               aria-label="Delete session"
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
         ))}

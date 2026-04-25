@@ -1,21 +1,23 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { X } from "lucide-react"
 import { DesignerItem, DesignerNoteItem } from "@/types"
+import { SplitButton } from "@/components/claude/SplitButton"
 
 interface Props {
   designer: DesignerItem
   onNoteAdd: (body: string) => Promise<DesignerNoteItem>
   onNoteUpdate: (noteId: string, body: string) => Promise<void>
   onNoteDelete: (noteId: string) => Promise<void>
+  onOpenClaude: (prompt: string, label: string) => void
 }
 
-export function NotesTab({ designer, onNoteAdd, onNoteUpdate, onNoteDelete }: Props) {
+export function NotesTab({ designer, onNoteAdd, onNoteUpdate, onNoteDelete, onOpenClaude }: Props) {
   const [notes, setNotes] = useState<DesignerNoteItem[]>(designer.notes)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editBody, setEditBody] = useState("")
   const [adding, setAdding] = useState(false)
-  const [copied, setCopied] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   async function handleAddNote() {
@@ -50,7 +52,7 @@ export function NotesTab({ designer, onNoteAdd, onNoteUpdate, onNoteDelete }: Pr
     if (editingId === noteId) setEditingId(null)
   }
 
-  function copyPrompt() {
+  function buildPrompt(): string {
     const allNotes = notes
       .filter((n) => n.body.trim())
       .map((n) => {
@@ -59,15 +61,11 @@ export function NotesTab({ designer, onNoteAdd, onNoteUpdate, onNoteDelete }: Pr
       })
       .join("\n\n---\n\n")
 
-    const prompt = `The following are manager notes for ${designer.name} (${designer.role}):
+    return `The following are manager notes for ${designer.name} (${designer.role}):
 
 ${allNotes || "No notes recorded yet."}
 
 Please extract all action items, follow-ups, and to-dos from these notes. Format them as a clear numbered list, grouped by theme if possible.`
-
-    navigator.clipboard.writeText(prompt).catch(() => {})
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
@@ -75,13 +73,11 @@ Please extract all action items, follow-ups, and to-dos from these notes. Format
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Manager Notes</h3>
         <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={copyPrompt}
-            className="text-xs px-3 py-1.5 border rounded-md hover:bg-muted transition-colors"
-          >
-            {copied ? "Copied!" : "Copy Extract To-Dos Prompt"}
-          </button>
+          <SplitButton
+            label="Ask Claude: To-Dos"
+            onAsk={() => onOpenClaude(buildPrompt(), `Extract To-Dos — ${designer.name}`)}
+            onCopy={() => navigator.clipboard.writeText(buildPrompt()).catch(() => {})}
+          />
           <button
             type="button"
             onClick={handleAddNote}
@@ -112,10 +108,10 @@ Please extract all action items, follow-ups, and to-dos from these notes. Format
                 <button
                   type="button"
                   onClick={() => handleDelete(note.id)}
-                  className="text-muted-foreground hover:text-red-600 transition-colors text-xs"
+                  className="text-muted-foreground hover:text-red-600 transition-colors"
                   aria-label="Delete note"
                 >
-                  ✕
+                  <X size={14} />
                 </button>
               </div>
               {isEditing ? (

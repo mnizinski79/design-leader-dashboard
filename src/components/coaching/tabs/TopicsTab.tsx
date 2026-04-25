@@ -1,22 +1,23 @@
 "use client"
 
 import { useState } from "react"
+import { X } from "lucide-react"
 import { DesignerItem, DesignerTopicItem } from "@/types"
 import { DREYFUS_DESCRIPTIONS } from "@/components/coaching/lib/coaching-framework"
+import { SplitButton } from "@/components/claude/SplitButton"
 
 interface Props {
   designer: DesignerItem
   onTopicAdd: (title: string) => Promise<DesignerTopicItem>
   onTopicToggle: (topicId: string, discussed: boolean) => Promise<void>
   onTopicDelete: (topicId: string) => Promise<void>
+  onOpenClaude: (prompt: string, label: string) => void
 }
 
-export function TopicsTab({ designer, onTopicAdd, onTopicToggle, onTopicDelete }: Props) {
+export function TopicsTab({ designer, onTopicAdd, onTopicToggle, onTopicDelete, onOpenClaude }: Props) {
   const [topics, setTopics] = useState<DesignerTopicItem[]>(designer.topics)
   const [newTitle, setNewTitle] = useState("")
   const [adding, setAdding] = useState(false)
-  const [copied, setCopied] = useState(false)
-
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     if (!newTitle.trim()) return
@@ -41,7 +42,7 @@ export function TopicsTab({ designer, onTopicAdd, onTopicToggle, onTopicDelete }
     setTopics((prev) => prev.filter((t) => t.id !== topicId))
   }
 
-  function copyPrompt() {
+  function buildPrompt(): string {
     const stageDesc = designer.dreyfusStage
       ? DREYFUS_DESCRIPTIONS[designer.dreyfusStage]
       : "No stage set"
@@ -51,30 +52,24 @@ export function TopicsTab({ designer, onTopicAdd, onTopicToggle, onTopicDelete }
       ? openTopics.map((t) => `- ${t.title}`).join("\n")
       : "No open topics currently."
 
-    const prompt = `Designer: ${designer.name}, ${designer.role} (${designer.roleLevel})
+    return `Designer: ${designer.name}, ${designer.role} (${designer.roleLevel})
 Dreyfus Stage: ${designer.dreyfusStage ?? "Not set"} — ${stageDesc}
 
 Open 1:1 Topics:
 ${topicList}
 
 Please generate 6 tailored coaching questions for my next 1:1 with ${designer.name}. The questions should be appropriate for a ${designer.dreyfusStage ?? "designer"} on the Dreyfus scale and address the open topics listed above.`
-
-    navigator.clipboard.writeText(prompt).catch(() => {})
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">1:1 Topics</h3>
-        <button
-          type="button"
-          onClick={copyPrompt}
-          className="text-xs px-3 py-1.5 border rounded-md hover:bg-muted transition-colors"
-        >
-          {copied ? "Copied!" : "Copy Coaching Questions"}
-        </button>
+        <SplitButton
+          label="Ask Claude: Questions"
+          onAsk={() => onOpenClaude(buildPrompt(), `1:1 Questions — ${designer.name}`)}
+          onCopy={() => navigator.clipboard.writeText(buildPrompt()).catch(() => {})}
+        />
       </div>
 
       {/* Add topic */}
@@ -120,10 +115,10 @@ Please generate 6 tailored coaching questions for my next 1:1 with ${designer.na
             <button
               type="button"
               onClick={() => handleDelete(t.id)}
-              className="text-muted-foreground hover:text-red-600 transition-colors text-xs"
+              className="text-muted-foreground hover:text-red-600 transition-colors"
               aria-label={`Delete topic: ${t.title}`}
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
         ))}
