@@ -62,6 +62,13 @@ export function HomePageClient({
   const [focusDraft, setFocusDraft] = useState("")
   const [savingFocus, setSavingFocus] = useState(false)
 
+  // ── Conversation state ────────────────────────────────────────────────────
+  const [convos, setConvos] = useState<ConversationItem[]>(conversations)
+  const [addingConvo, setAddingConvo] = useState(false)
+  const [convoTopic, setConvoTopic] = useState("")
+  const [convoPerson, setConvoPerson] = useState("")
+  const [savingConvo, setSavingConvo] = useState(false)
+
   const today = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
     day: "numeric",
@@ -78,7 +85,7 @@ export function HomePageClient({
   const overdueOneOnOneCount = designers.filter(
     (d) => d.nextOneOnOne && d.nextOneOnOne < todayStr
   ).length
-  const pendingConvoCount = conversations.length
+  const pendingConvoCount = convos.length
 
   // Top 3 priorities: urgent first, then in-progress, then by sortOrder
   const top3 = [...openTodos]
@@ -124,6 +131,37 @@ export function HomePageClient({
       }
     } finally {
       setSavingFocus(false)
+    }
+  }
+
+  // ── Conversation handlers ─────────────────────────────────────────────────
+  async function handleAddConvo() {
+    const topic = convoTopic.trim()
+    const person = convoPerson.trim()
+    if (!topic || !person) return
+    setSavingConvo(true)
+    try {
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, person }),
+      })
+      if (res.ok) {
+        const created: ConversationItem = await res.json()
+        setConvos((prev) => [created, ...prev])
+        setConvoTopic("")
+        setConvoPerson("")
+        setAddingConvo(false)
+      }
+    } finally {
+      setSavingConvo(false)
+    }
+  }
+
+  async function handleMarkDone(id: string) {
+    const res = await fetch(`/api/conversations/${id}`, { method: "PATCH" })
+    if (res.ok) {
+      setConvos((prev) => prev.filter((c) => c.id !== id))
     }
   }
 
@@ -337,16 +375,62 @@ export function HomePageClient({
           <div className={cardClass}>
             <div className="flex items-center justify-between mb-3">
               <span className={cardTitle}>Conversations to have</span>
-              <Link href="/coaching" className={linkBtn}>All →</Link>
+              <button
+                onClick={() => setAddingConvo(true)}
+                className={linkBtn}
+              >
+                + Add
+              </button>
             </div>
 
-            {conversations.length === 0 ? (
+            {/* Add conversation inline form */}
+            {addingConvo && (
+              <div className="bg-[#f5f5f7] rounded-lg p-3 mb-3 space-y-2">
+                <input
+                  autoFocus
+                  placeholder="Topic *"
+                  value={convoTopic}
+                  onChange={(e) => setConvoTopic(e.target.value)}
+                  className="w-full text-sm px-3 py-1.5 border border-[#d2d2d7] rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+                />
+                <input
+                  placeholder="Person *"
+                  value={convoPerson}
+                  onChange={(e) => setConvoPerson(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddConvo()}
+                  className="w-full text-sm px-3 py-1.5 border border-[#d2d2d7] rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+                />
+                <div className="flex gap-2 justify-end">
+                  <button
+                    onClick={() => { setAddingConvo(false); setConvoTopic(""); setConvoPerson("") }}
+                    className="text-xs px-3 py-1.5 border border-[#d2d2d7] rounded-lg text-[#6e6e73] hover:bg-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddConvo}
+                    disabled={savingConvo || !convoTopic.trim() || !convoPerson.trim()}
+                    className="text-xs px-3 py-1.5 bg-[#0071e3] text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {savingConvo ? "Saving…" : "Add"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {convos.length === 0 ? (
               <div className="py-3 text-center text-[12px] text-[#6e6e73]">No conversations queued</div>
             ) : (
               <>
-                {conversations.slice(0, 4).map((c) => (
+                {convos.slice(0, 4).map((c) => (
                   <div key={c.id} className="flex items-start gap-3 py-2.5 border-b border-[#f0f0f5] last:border-0">
-                    <div className="w-5 h-5 rounded-full flex-shrink-0 mt-0.5 border-2 border-[#0071E3]" />
+                    <button
+                      onClick={() => handleMarkDone(c.id)}
+                      className="w-5 h-5 rounded-full flex-shrink-0 mt-0.5 border-2 border-[#0071E3] hover:bg-[#0071E3] group transition-colors"
+                      title="Mark as done"
+                    >
+                      <span className="hidden group-hover:block text-white text-[10px] leading-none">✓</span>
+                    </button>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-semibold text-[#1d1d1f]">{c.topic}</p>
                       {c.person && (
@@ -357,9 +441,9 @@ export function HomePageClient({
                     </div>
                   </div>
                 ))}
-                {conversations.length > 4 && (
+                {convos.length > 4 && (
                   <p className="text-[11px] text-[#6e6e73] text-center pt-2">
-                    +{conversations.length - 4} more
+                    +{convos.length - 4} more
                   </p>
                 )}
               </>
