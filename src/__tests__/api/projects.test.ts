@@ -100,3 +100,53 @@ describe("POST /api/projects", () => {
     )
   })
 })
+
+describe("PATCH /api/projects/[id]", () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it("returns 401 when unauthenticated", async () => {
+    const { PATCH } = await import("@/app/api/projects/[id]/route")
+    mockAuth.mockResolvedValue(null)
+    const res = await PATCH(makeReq({ name: "Updated" }), { params: { id: "proj-1" } })
+    expect(res.status).toBe(401)
+  })
+
+  it("returns 404 when project not found", async () => {
+    const { PATCH } = await import("@/app/api/projects/[id]/route")
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } })
+    const { prisma } = await import("@/lib/prisma")
+    ;(prisma.project.findUnique as jest.Mock).mockResolvedValue(null)
+    const res = await PATCH(makeReq({ name: "Updated" }), { params: { id: "proj-1" } })
+    expect(res.status).toBe(404)
+  })
+
+  it("returns 403 when project belongs to another user", async () => {
+    const { PATCH } = await import("@/app/api/projects/[id]/route")
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } })
+    const { prisma } = await import("@/lib/prisma")
+    ;(prisma.project.findUnique as jest.Mock).mockResolvedValue({ ...fakeProject, userId: "other-user" })
+    const res = await PATCH(makeReq({ name: "Updated" }), { params: { id: "proj-1" } })
+    expect(res.status).toBe(403)
+  })
+})
+
+describe("DELETE /api/projects/[id]", () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it("returns 401 when unauthenticated", async () => {
+    const { DELETE } = await import("@/app/api/projects/[id]/route")
+    mockAuth.mockResolvedValue(null)
+    const res = await DELETE(makeReq(), { params: { id: "proj-1" } })
+    expect(res.status).toBe(401)
+  })
+
+  it("deletes project and returns ok", async () => {
+    const { DELETE } = await import("@/app/api/projects/[id]/route")
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } })
+    const { prisma } = await import("@/lib/prisma")
+    ;(prisma.project.findUnique as jest.Mock).mockResolvedValue(fakeProject)
+    ;(prisma.project.delete as jest.Mock).mockResolvedValue(fakeProject)
+    const res = await DELETE(makeReq(), { params: { id: "proj-1" } })
+    expect(res.status).toBe(200)
+  })
+})
