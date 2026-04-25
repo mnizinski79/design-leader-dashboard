@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import { ClaudePanel } from "@/components/claude/ClaudePanel"
 import {
   DesignerItem, DesignerSessionItem, DesignerTopicItem, DesignerGoalItem,
   DesignerFeedbackItem, DesignerNoteItem, SessionFlag, DreyfusStage, GoalStatus,
@@ -28,11 +29,20 @@ export function CoachingPageClient({ initialDesigners }: Props) {
   })
   const [activeTab, setActiveTab] = useState<ActiveTab>("skills")
   const [showAddModal, setShowAddModal] = useState(false)
+  const [claudeOpen, setClaudeOpen] = useState(false)
+  const [claudePrompt, setClaudePrompt] = useState<string | null>(null)
+  const [claudeLabel, setClaudeLabel] = useState("")
 
   const selected = designers.find((d) => d.id === selectedId) ?? null
 
   function updateDesigner(id: string, patch: Partial<DesignerItem>) {
     setDesigners((prev) => prev.map((d) => d.id === id ? { ...d, ...patch } : d))
+  }
+
+  function handleOpenClaude(prompt: string, label: string) {
+    setClaudePrompt(prompt)
+    setClaudeLabel(label)
+    setClaudeOpen(true)
   }
 
   function handleDesignerCreated(designer: DesignerItem) {
@@ -246,6 +256,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
           onNoteAdd={handleNoteAdd}
           onNoteUpdate={handleNoteUpdate}
           onNoteDelete={handleNoteDelete}
+          onOpenClaude={handleOpenClaude}
         />
       )}
 
@@ -255,6 +266,13 @@ export function CoachingPageClient({ initialDesigners }: Props) {
           onCreated={handleDesignerCreated}
         />
       )}
+
+      <ClaudePanel
+        isOpen={claudeOpen}
+        onClose={() => setClaudeOpen(false)}
+        prompt={claudePrompt}
+        contextLabel={claudeLabel}
+      />
     </div>
   )
 }

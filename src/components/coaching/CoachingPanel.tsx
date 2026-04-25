@@ -42,6 +42,7 @@ interface Props {
   onNoteAdd: (body: string) => Promise<DesignerNoteItem>
   onNoteUpdate: (noteId: string, body: string) => Promise<void>
   onNoteDelete: (noteId: string) => Promise<void>
+  onOpenClaude: (prompt: string, label: string) => void
 }
 
 export function CoachingPanel({
@@ -52,6 +53,7 @@ export function CoachingPanel({
   onGoalAdd, onGoalStatusChange, onGoalDelete,
   onFeedbackAdd, onFeedbackDelete,
   onNoteAdd, onNoteUpdate, onNoteDelete,
+  onOpenClaude,
 }: Props) {
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -87,6 +89,7 @@ export function CoachingPanel({
             designer={designer}
             onSessionAdd={onSessionAdd}
             onSessionDelete={onSessionDelete}
+            onOpenClaude={onOpenClaude}
           />
         )}
         {activeTab === "topics" && (
@@ -95,6 +98,7 @@ export function CoachingPanel({
             onTopicAdd={onTopicAdd}
             onTopicToggle={onTopicToggle}
             onTopicDelete={onTopicDelete}
+            onOpenClaude={onOpenClaude}
           />
         )}
         {activeTab === "goals" && (
@@ -118,12 +122,13 @@ export function CoachingPanel({
             onNoteAdd={onNoteAdd}
             onNoteUpdate={onNoteUpdate}
             onNoteDelete={onNoteDelete}
+            onOpenClaude={onOpenClaude}
           />
         )}
       </div>
 
       {/* Coaching Brief footer */}
-      <CoachingBrief designer={designer} />
+      <CoachingBrief designer={designer} onOpenClaude={onOpenClaude} />
     </div>
   )
 }
