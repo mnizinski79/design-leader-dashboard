@@ -1,0 +1,62 @@
+import { NextResponse } from "next/server"
+import Anthropic from "@anthropic-ai/sdk"
+import { auth } from "@/lib/auth"
+
+export async function POST(req: Request) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      { error: "Configuration error — API key not set" },
+      { status: 500 }
+    )
+  }
+
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+  }
+
+  const { messages } = body as {
+    messages: { role: "user" | "assistant"; content: string }[]
+  }
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return NextResponse.json({ error: "messages required" }, { status: 400 })
+  }
+
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+  const stream = client.messages.stream({
+    model: "claude-sonnet-4-6",
+    max_tokens: 2048,
+    messages,
+  })
+
+  const encoder = new TextEncoder()
+  const readable = new ReadableStream({
+    async start(controller) {
+      for await (const event of stream) {
+        if (
+          event.type === "content_block_delta" &&
+          event.delta.type === "text_delta"
+        ) {
+          controller.enqueue(encoder.encode(event.delta.text))
+        }
+      }
+      controller.close()
+    },
+    cancel() {
+      stream.abort()
+    },
+  })
+
+  return new Response(readable, {
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  })
+}
