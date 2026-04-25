@@ -56,11 +56,15 @@ export function CoachingPageClient({ initialDesigners }: Props) {
 
   async function handleSkillsSave(skills: { skillName: string; value: number }[]) {
     if (!selected) return
-    await fetch(`/api/designers/${selected.id}/skills`, {
+    const res = await fetch(`/api/designers/${selected.id}/skills`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ skills }),
     })
+    if (res.ok) {
+      const updatedSkills = await res.json()
+      updateDesigner(selected.id, { skills: updatedSkills })
+    }
     router.refresh()
   }
 
