@@ -75,3 +75,54 @@ describe("PATCH /api/account/profile", () => {
     expect(user?.name).toBe("Updated Name")
   })
 })
+
+// ─── Password ────────────────────────────────────────────────────────────────
+
+describe("PATCH /api/account/password", () => {
+  beforeEach(async () => {
+    // Reset password to known value before each test
+    const hash = await bcrypt.hash("currentpassword", 12)
+    await prisma.user.update({ where: { id: testUserId }, data: { passwordHash: hash } })
+  })
+
+  it("returns 401 when not authenticated", async () => {
+    mockAuth.mockResolvedValueOnce(null)
+    const res = await patchPassword(makeReq("http://localhost/api/account/password", {
+      currentPassword: "currentpassword",
+      newPassword: "newpassword123",
+    }))
+    expect(res.status).toBe(401)
+  })
+
+  it("returns 400 when current password is wrong", async () => {
+    const res = await patchPassword(makeReq("http://localhost/api/account/password", {
+      currentPassword: "wrongpassword",
+      newPassword: "newpassword123",
+    }))
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toBe("Current password is incorrect")
+  })
+
+  it("returns 400 when new password is shorter than 8 characters", async () => {
+    const res = await patchPassword(makeReq("http://localhost/api/account/password", {
+      currentPassword: "currentpassword",
+      newPassword: "short",
+    }))
+    expect(res.status).toBe(400)
+  })
+
+  it("updates password hash when current password is correct", async () => {
+    const res = await patchPassword(makeReq("http://localhost/api/account/password", {
+      currentPassword: "currentpassword",
+      newPassword: "newpassword123",
+    }))
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.ok).toBe(true)
+
+    const user = await prisma.user.findUnique({ where: { id: testUserId } })
+    const valid = await bcrypt.compare("newpassword123", user!.passwordHash)
+    expect(valid).toBe(true)
+  })
+})
