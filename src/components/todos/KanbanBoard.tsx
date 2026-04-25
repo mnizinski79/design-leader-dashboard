@@ -140,12 +140,7 @@ export function KanbanBoard({ initialTodos }: Props) {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
       }
 
-      // Read sortOrder from latest committed state via functional updater
-      let sortOrder = -1
-      setBoard(prev => {
-        sortOrder = prev[currentContainer].findIndex(t => t.id === active.id)
-        return prev  // no change to state, just reading it reliably
-      })
+      const sortOrder = Math.max(0, board[currentContainer].findIndex(t => t.id === active.id))
 
       try {
         await fetch(`/api/todos/${active.id}`, {
