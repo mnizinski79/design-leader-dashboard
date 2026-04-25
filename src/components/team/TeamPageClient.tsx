@@ -240,7 +240,7 @@ export function TeamPageClient({ initialDesigners }: Props) {
               {/* Actions */}
               <div className="flex items-center gap-2 justify-end">
                 <Link
-                  href={`/coaching/${d.id}`}
+                  href="/coaching"
                   className="text-[11px] px-2.5 py-1 border border-[#d2d2d7] rounded-lg text-[#6e6e73] hover:bg-slate-50 whitespace-nowrap"
                 >
                   1:1 →

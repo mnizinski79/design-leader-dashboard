@@ -504,7 +504,7 @@ export function HomePageClient({
                       </p>
                     </div>
                     <Link
-                      href={`/coaching/${d.id}`}
+                      href="/coaching"
                       className="text-[11px] px-2.5 py-1 border border-[#d2d2d7] rounded-lg text-[#6e6e73] hover:bg-slate-50 flex-shrink-0"
                     >
                       1:1 →
