@@ -31,6 +31,8 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
     setError(null)
     setInput("")
     sendToApi([initial])
+  // sendToApi is intentionally excluded: it is redefined each render and including
+  // it would cause an infinite loop. prompt is the only meaningful dependency.
   }, [prompt]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -63,18 +65,22 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
       const reader = res.body!.getReader()
       const decoder = new TextDecoder()
 
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = decoder.decode(value, { stream: true })
-        setMessages((prev) => {
-          const updated = [...prev]
-          updated[updated.length - 1] = {
-            role: "assistant",
-            content: updated[updated.length - 1].content + chunk,
-          }
-          return updated
-        })
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          const chunk = decoder.decode(value, { stream: true })
+          setMessages((prev) => {
+            const updated = [...prev]
+            updated[updated.length - 1] = {
+              role: "assistant",
+              content: updated[updated.length - 1].content + chunk,
+            }
+            return updated
+          })
+        }
+      } finally {
+        reader.releaseLock()
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") return
