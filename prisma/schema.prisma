@@ -143,16 +143,22 @@ enum ProjectStatus {
 }
 
 model Project {
-  id        String        @id @default(uuid())
-  userId    String        @map("user_id")
-  name      String
-  phase     ProjectPhase  @default(DISCOVERY)
-  status    ProjectStatus @default(ON_TRACK)
-  attention Boolean       @default(false)
-  createdAt DateTime      @default(now()) @map("created_at")
+  id             String        @id @default(uuid())
+  userId         String        @map("user_id")
+  name           String
+  phase          ProjectPhase  @default(DISCOVERY)
+  status         ProjectStatus @default(ON_TRACK)
+  description    String?
+  dueDate        DateTime?     @map("due_date") @db.Date
+  sprintSnapshot String?       @map("sprint_snapshot")
+  stakeholders   String?
+  attention      String?
+  blockers       String?
+  createdAt      DateTime      @default(now()) @map("created_at")
 
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   decisions ProjectDecision[]
+  designers ProjectDesigner[]
 
   @@map("projects")
 }
@@ -166,6 +172,17 @@ model ProjectDecision {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("project_decisions")
+}
+
+model ProjectDesigner {
+  projectId  String @map("project_id")
+  designerId String @map("designer_id")
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  designer Designer @relation(fields: [designerId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, designerId])
+  @@map("project_designers")
 }
 
 // ─── Daily Focus ──────────────────────────────────────────────────────────────
@@ -212,6 +229,7 @@ model Designer {
   feedback DesignerFeedback[]
   topics   DesignerTopic[]
   notes    DesignerNote[]
+  projects ProjectDesigner[]
 
   @@map("designers")
 }
