@@ -64,6 +64,15 @@ export function HomePageClient({
 
   // ── Conversation state ────────────────────────────────────────────────────
   const [convos, setConvos] = useState<ConversationItem[]>(conversations)
+  const [expandedConvos, setExpandedConvos] = useState<Set<string>>(new Set())
+
+  function toggleConvo(id: string) {
+    setExpandedConvos(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
   const [addingConvo, setAddingConvo] = useState(false)
   const [convoTopic, setConvoTopic] = useState("")
   const [convoPerson, setConvoPerson] = useState("")
@@ -430,28 +439,39 @@ export function HomePageClient({
               <div className="py-3 text-center text-[12px] text-[#6e6e73]">No conversations queued</div>
             ) : (
               <>
-                {convos.slice(0, 4).map((c) => (
-                  <div key={c.id} className="flex items-start gap-3 py-2.5 border-b border-[#f0f0f5] last:border-0">
-                    <button
-                      onClick={() => handleMarkDone(c.id)}
-                      className="w-5 h-5 rounded-full flex-shrink-0 mt-0.5 border-2 border-[#0071E3] hover:bg-[#0071E3] group transition-colors"
-                      title="Mark as done"
+                {convos.slice(0, 4).map((c) => {
+                  const expanded = expandedConvos.has(c.id)
+                  return (
+                    <div
+                      key={c.id}
+                      className="flex items-start gap-3 py-2.5 border-b border-[#f0f0f5] last:border-0"
                     >
-                      <span className="hidden group-hover:block text-white text-[10px] leading-none">✓</span>
-                    </button>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-[#1d1d1f]">{c.topic}</p>
-                      {c.description && (
-                        <p className="text-[11px] text-[#6e6e73] mt-0.5 leading-snug">{c.description}</p>
-                      )}
-                      {c.person && (
-                        <span className="inline-block mt-1 text-[11px] font-medium bg-[#E0F2FE] text-[#0071E3] px-2 py-0.5 rounded-full">
-                          👤 {c.person}
-                        </span>
-                      )}
+                      <button
+                        onClick={() => handleMarkDone(c.id)}
+                        className="w-5 h-5 rounded-full flex-shrink-0 mt-0.5 border-2 border-[#0071E3] hover:bg-[#0071E3] group transition-colors"
+                        title="Mark as done"
+                      >
+                        <span className="hidden group-hover:block text-white text-[10px] leading-none">✓</span>
+                      </button>
+                      <div
+                        className="flex-1 min-w-0 cursor-pointer"
+                        onClick={() => c.description && toggleConvo(c.id)}
+                      >
+                        <p className="text-[13px] font-semibold text-[#1d1d1f]">{c.topic}</p>
+                        {c.description && (
+                          <p className={`text-[11px] text-[#6e6e73] mt-0.5 leading-snug ${expanded ? "" : "truncate"}`}>
+                            {c.description}
+                          </p>
+                        )}
+                        {c.person && (
+                          <span className="inline-block mt-1 text-[11px] font-medium bg-[#E0F2FE] text-[#0071E3] px-2 py-0.5 rounded-full">
+                            👤 {c.person}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
                 {convos.length > 4 && (
                   <p className="text-[11px] text-[#6e6e73] text-center pt-2">
                     +{convos.length - 4} more
