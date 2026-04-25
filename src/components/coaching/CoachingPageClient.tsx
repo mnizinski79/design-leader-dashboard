@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import {
   DesignerItem, DesignerSessionItem, DesignerTopicItem, DesignerGoalItem,
   DesignerFeedbackItem, DesignerNoteItem, SessionFlag, DreyfusStage, GoalStatus,
@@ -15,6 +15,7 @@ interface Props {
 }
 
 export function CoachingPageClient({ initialDesigners }: Props) {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const designerParam = searchParams.get("designer")
 
@@ -47,7 +48,10 @@ export function CoachingPageClient({ initialDesigners }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ dreyfusStage: stage }),
     })
-    if (res.ok) updateDesigner(selected.id, { dreyfusStage: stage })
+    if (res.ok) {
+      updateDesigner(selected.id, { dreyfusStage: stage })
+      router.refresh()
+    }
   }
 
   async function handleSkillsSave(skills: { skillName: string; value: number }[]) {
@@ -57,6 +61,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ skills }),
     })
+    router.refresh()
   }
 
   async function handleSessionAdd(data: { date: string; notes: string; flag?: SessionFlag }): Promise<DesignerSessionItem> {
@@ -68,6 +73,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     })
     const session: DesignerSessionItem = await res.json()
     updateDesigner(selected.id, { sessions: [session, ...(selected.sessions ?? [])] })
+    router.refresh()
     return session
   }
 
@@ -75,6 +81,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     if (!selected) return
     await fetch(`/api/designers/${selected.id}/sessions/${sessionId}`, { method: "DELETE" })
     updateDesigner(selected.id, { sessions: (selected.sessions ?? []).filter((s) => s.id !== sessionId) })
+    router.refresh()
   }
 
   async function handleTopicAdd(title: string): Promise<DesignerTopicItem> {
@@ -86,6 +93,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     })
     const topic: DesignerTopicItem = await res.json()
     updateDesigner(selected.id, { topics: [...(selected.topics ?? []), topic] })
+    router.refresh()
     return topic
   }
 
@@ -99,12 +107,14 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     updateDesigner(selected.id, {
       topics: (selected.topics ?? []).map((t) => t.id === topicId ? { ...t, discussed } : t),
     })
+    router.refresh()
   }
 
   async function handleTopicDelete(topicId: string) {
     if (!selected) return
     await fetch(`/api/designers/${selected.id}/topics/${topicId}`, { method: "DELETE" })
     updateDesigner(selected.id, { topics: (selected.topics ?? []).filter((t) => t.id !== topicId) })
+    router.refresh()
   }
 
   async function handleGoalAdd(data: {
@@ -118,6 +128,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     })
     const goal: DesignerGoalItem = await res.json()
     updateDesigner(selected.id, { goals: [goal, ...(selected.goals ?? [])] })
+    router.refresh()
     return goal
   }
 
@@ -131,12 +142,14 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     updateDesigner(selected.id, {
       goals: (selected.goals ?? []).map((g) => g.id === goalId ? { ...g, status } : g),
     })
+    router.refresh()
   }
 
   async function handleGoalDelete(goalId: string) {
     if (!selected) return
     await fetch(`/api/designers/${selected.id}/goals/${goalId}`, { method: "DELETE" })
     updateDesigner(selected.id, { goals: (selected.goals ?? []).filter((g) => g.id !== goalId) })
+    router.refresh()
   }
 
   async function handleFeedbackAdd(data: { sourceName: string; date: string; body: string }): Promise<DesignerFeedbackItem> {
@@ -148,6 +161,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     })
     const fb: DesignerFeedbackItem = await res.json()
     updateDesigner(selected.id, { feedback: [fb, ...(selected.feedback ?? [])] })
+    router.refresh()
     return fb
   }
 
@@ -155,6 +169,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     if (!selected) return
     await fetch(`/api/designers/${selected.id}/feedback/${feedbackId}`, { method: "DELETE" })
     updateDesigner(selected.id, { feedback: (selected.feedback ?? []).filter((f) => f.id !== feedbackId) })
+    router.refresh()
   }
 
   async function handleNoteAdd(body: string): Promise<DesignerNoteItem> {
@@ -166,6 +181,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     })
     const note: DesignerNoteItem = await res.json()
     updateDesigner(selected.id, { notes: [note, ...(selected.notes ?? [])] })
+    router.refresh()
     return note
   }
 
@@ -179,12 +195,14 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     updateDesigner(selected.id, {
       notes: (selected.notes ?? []).map((n) => n.id === noteId ? { ...n, body } : n),
     })
+    router.refresh()
   }
 
   async function handleNoteDelete(noteId: string) {
     if (!selected) return
     await fetch(`/api/designers/${selected.id}/notes/${noteId}`, { method: "DELETE" })
     updateDesigner(selected.id, { notes: (selected.notes ?? []).filter((n) => n.id !== noteId) })
+    router.refresh()
   }
 
   return (

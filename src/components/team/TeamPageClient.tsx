@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { DREYFUS_LABELS } from "@/components/coaching/lib/coaching-framework"
 import { DesignerModal, type DesignerFormData } from "@/components/team/DesignerModal"
@@ -26,6 +27,7 @@ function getInitials(name: string) {
 }
 
 export function TeamPageClient({ initialDesigners }: Props) {
+  const router = useRouter()
   const [designers, setDesigners] = useState<DesignerItem[]>(initialDesigners)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<DesignerItem | undefined>(undefined)
@@ -82,6 +84,7 @@ export function TeamPageClient({ initialDesigners }: Props) {
       setDesigners((prev) => [...prev, final])
     }
     setModalOpen(false)
+    router.refresh()
   }
 
   async function handleDelete(id: string) {
@@ -92,6 +95,7 @@ export function TeamPageClient({ initialDesigners }: Props) {
     const res = await fetch(`/api/designers/${id}`, { method: "DELETE" })
     if (res.ok) {
       setDesigners((prev) => prev.filter((d) => d.id !== id))
+      router.refresh()
     }
   }
 
