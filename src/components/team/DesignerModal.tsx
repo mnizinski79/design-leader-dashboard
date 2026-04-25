@@ -68,6 +68,7 @@ export function DesignerModal({ isOpen, onClose, onSave, designer }: Props) {
     if (isOpen) {
       setForm(designer ? designerToForm(designer) : emptyForm())
       setError(null)
+      setSaving(false)
     }
   }, [isOpen, designer])
 
