@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -65,7 +66,9 @@ export default async function CoachingPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <CoachingPageClient initialDesigners={serialized} />
+      <Suspense>
+        <CoachingPageClient initialDesigners={serialized} />
+      </Suspense>
     </div>
   )
 }

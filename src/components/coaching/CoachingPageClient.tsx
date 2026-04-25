@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 import {
   DesignerItem, DesignerSessionItem, DesignerTopicItem, DesignerGoalItem,
   DesignerFeedbackItem, DesignerNoteItem, SessionFlag, DreyfusStage, GoalStatus,
@@ -14,8 +15,16 @@ interface Props {
 }
 
 export function CoachingPageClient({ initialDesigners }: Props) {
+  const searchParams = useSearchParams()
+  const designerParam = searchParams.get("designer")
+
   const [designers, setDesigners] = useState<DesignerItem[]>(initialDesigners)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    if (designerParam && initialDesigners.some((d) => d.id === designerParam)) {
+      return designerParam
+    }
+    return null
+  })
   const [activeTab, setActiveTab] = useState<ActiveTab>("skills")
   const [showAddModal, setShowAddModal] = useState(false)
 
