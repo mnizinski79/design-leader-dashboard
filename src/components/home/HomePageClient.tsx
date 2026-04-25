@@ -67,6 +67,7 @@ export function HomePageClient({
   const [addingConvo, setAddingConvo] = useState(false)
   const [convoTopic, setConvoTopic] = useState("")
   const [convoPerson, setConvoPerson] = useState("")
+  const [convoDescription, setConvoDescription] = useState("")
   const [savingConvo, setSavingConvo] = useState(false)
 
   const today = new Date().toLocaleDateString("en-GB", {
@@ -144,13 +145,14 @@ export function HomePageClient({
       const res = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, person }),
+        body: JSON.stringify({ topic, person, description: convoDescription.trim() || null }),
       })
       if (res.ok) {
         const created: ConversationItem = await res.json()
         setConvos((prev) => [created, ...prev])
         setConvoTopic("")
         setConvoPerson("")
+        setConvoDescription("")
         setAddingConvo(false)
       }
     } finally {
@@ -397,12 +399,18 @@ export function HomePageClient({
                   placeholder="Person *"
                   value={convoPerson}
                   onChange={(e) => setConvoPerson(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddConvo()}
                   className="w-full text-sm px-3 py-1.5 border border-[#d2d2d7] rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white"
+                />
+                <textarea
+                  placeholder="Description (optional)"
+                  value={convoDescription}
+                  onChange={(e) => setConvoDescription(e.target.value)}
+                  rows={2}
+                  className="w-full text-sm px-3 py-1.5 border border-[#d2d2d7] rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white resize-none"
                 />
                 <div className="flex gap-2 justify-end">
                   <button
-                    onClick={() => { setAddingConvo(false); setConvoTopic(""); setConvoPerson("") }}
+                    onClick={() => { setAddingConvo(false); setConvoTopic(""); setConvoPerson(""); setConvoDescription("") }}
                     className="text-xs px-3 py-1.5 border border-[#d2d2d7] rounded-lg text-[#6e6e73] hover:bg-white"
                   >
                     Cancel
@@ -433,6 +441,9 @@ export function HomePageClient({
                     </button>
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-semibold text-[#1d1d1f]">{c.topic}</p>
+                      {c.description && (
+                        <p className="text-[11px] text-[#6e6e73] mt-0.5 leading-snug">{c.description}</p>
+                      )}
                       {c.person && (
                         <span className="inline-block mt-1 text-[11px] font-medium bg-[#E0F2FE] text-[#0071E3] px-2 py-0.5 rounded-full">
                           👤 {c.person}
