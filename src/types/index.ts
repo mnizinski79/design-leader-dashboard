@@ -135,3 +135,42 @@ export interface DesignerItem {
   topics: DesignerTopicItem[]
   notes: DesignerNoteItem[]
 }
+
+export type ProjectPhase =
+  | "DISCOVERY"
+  | "DESIGN"
+  | "DEV_HANDOFF"
+  | "IN_DEVELOPMENT"
+  | "LIVE"
+  | "ON_HOLD"
+
+export type ProjectStatus = "ON_TRACK" | "AT_RISK" | "BLOCKED" | "COMPLETE"
+
+export interface ProjectDecisionItem {
+  id: string
+  projectId: string
+  text: string
+  createdAt: string
+}
+
+export interface ProjectDesignerItem {
+  designerId: string
+  designer: { id: string; name: string }
+}
+
+export interface ProjectItem {
+  id: string
+  userId: string
+  name: string
+  phase: ProjectPhase
+  status: ProjectStatus
+  description: string | null
+  dueDate: string | null
+  sprintSnapshot: string | null
+  stakeholders: string | null
+  attention: string | null
+  blockers: string | null
+  createdAt: string
+  decisions: ProjectDecisionItem[]
+  designers: ProjectDesignerItem[]
+}
