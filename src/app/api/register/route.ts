@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
+import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { BCRYPT_ROUNDS } from "@/lib/auth"
 
@@ -32,10 +33,18 @@ export async function POST(req: Request) {
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS)
 
-  const user = await prisma.user.create({
-    data: { name, email, passwordHash },
-    select: { id: true, email: true, name: true, createdAt: true },
-  })
+  let user
+  try {
+    user = await prisma.user.create({
+      data: { name, email, passwordHash },
+      select: { id: true, email: true, name: true, createdAt: true },
+    })
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json({ error: "Email already registered" }, { status: 409 })
+    }
+    throw err
+  }
 
   return NextResponse.json(user, { status: 201 })
 }
