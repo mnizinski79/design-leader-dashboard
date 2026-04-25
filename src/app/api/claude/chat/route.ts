@@ -22,20 +22,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
 
-  const { messages } = body as {
-    messages: { role: "user" | "assistant"; content: string }[]
-  }
+  const raw = body as Record<string, unknown>
+  const messages = raw.messages
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "messages required" }, { status: 400 })
   }
+
+  const typedMessages = messages as { role: "user" | "assistant"; content: string }[]
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const stream = client.messages.stream({
     model: "claude-sonnet-4-6",
     max_tokens: 2048,
-    messages,
+    messages: typedMessages,
   })
 
   const encoder = new TextEncoder()
