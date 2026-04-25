@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { TagSelector } from "./TagSelector"
+import { ClaudePanel } from "@/components/claude/ClaudePanel"
+import { SplitButton } from "@/components/claude/SplitButton"
 import type { NoteItem, NoteTagItem } from "@/types"
 
 interface Props {
@@ -13,29 +15,6 @@ interface Props {
   onTagsChange: (updatedTags: NoteTagItem[]) => void
 }
 
-function CopyPromptButton({ label, buildPrompt }: { label: string; buildPrompt: () => string }) {
-  const [copied, setCopied] = useState(false)
-
-  async function handleClick() {
-    try {
-      await navigator.clipboard.writeText(buildPrompt())
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // clipboard permission denied or not available
-    }
-  }
-
-  return (
-    <button
-      onClick={handleClick}
-      className="text-xs text-slate-500 hover:text-blue-600 border border-slate-200 hover:border-blue-300 rounded-lg px-3 py-1.5 transition-colors"
-    >
-      {copied ? "Copied!" : label}
-    </button>
-  )
-}
-
 export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: Props) {
   const router = useRouter()
   const [title, setTitle] = useState(note.title)
@@ -43,6 +22,15 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
   const [date, setDate] = useState(note.date)
   const [body, setBody] = useState(note.body)
   const [saving, setSaving] = useState(false)
+  const [claudeOpen, setClaudeOpen] = useState(false)
+  const [claudePrompt, setClaudePrompt] = useState<string | null>(null)
+  const [claudeLabel, setClaudeLabel] = useState("")
+
+  function openClaude(prompt: string, label: string) {
+    setClaudePrompt(prompt)
+    setClaudeLabel(label)
+    setClaudeOpen(true)
+  }
 
   // Reset local state when switching to a different note
   useEffect(() => {
@@ -106,6 +94,7 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
   }
 
   return (
+    <>
     <div className="flex flex-col h-full p-6 space-y-4">
       <div className="flex items-start justify-between gap-4">
         <input
@@ -177,20 +166,43 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
       <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
         {saving && <span className="text-xs text-slate-400">Saving...</span>}
         <div className="flex gap-2 ml-auto">
-          <CopyPromptButton
-            label="Copy AI Summary Prompt"
-            buildPrompt={() =>
-              `Please summarize the following note and extract the key insights and decisions:\n\nTitle: ${title}\nProject: ${project}\nDate: ${date}\n\n${body}`
+          <SplitButton
+            label="Ask Claude: Summary"
+            onAsk={() =>
+              openClaude(
+                `Please summarize the following note and extract the key insights and decisions:\n\nTitle: ${title}\nProject: ${project}\nDate: ${date}\n\n${body}`,
+                `Summary — ${title}`
+              )
+            }
+            onCopy={() =>
+              navigator.clipboard
+                .writeText(`Please summarize the following note and extract the key insights and decisions:\n\nTitle: ${title}\nProject: ${project}\nDate: ${date}\n\n${body}`)
+                .catch(() => {})
             }
           />
-          <CopyPromptButton
-            label="Copy Extract Actions Prompt"
-            buildPrompt={() =>
-              `Please extract all action items, tasks, and next steps from the following note. Format them as a numbered list:\n\nTitle: ${title}\nProject: ${project}\n\n${body}`
+          <SplitButton
+            label="Ask Claude: Actions"
+            onAsk={() =>
+              openClaude(
+                `Please extract all action items, tasks, and next steps from the following note. Format them as a numbered list:\n\nTitle: ${title}\nProject: ${project}\n\n${body}`,
+                `Actions — ${title}`
+              )
+            }
+            onCopy={() =>
+              navigator.clipboard
+                .writeText(`Please extract all action items, tasks, and next steps from the following note. Format them as a numbered list:\n\nTitle: ${title}\nProject: ${project}\n\n${body}`)
+                .catch(() => {})
             }
           />
         </div>
       </div>
     </div>
+    <ClaudePanel
+      isOpen={claudeOpen}
+      onClose={() => setClaudeOpen(false)}
+      prompt={claudePrompt}
+      contextLabel={claudeLabel}
+    />
+    </>
   )
 }
