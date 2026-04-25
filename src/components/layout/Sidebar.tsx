@@ -45,7 +45,19 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-slate-200">
+      <div className="px-3 py-4 border-t border-slate-200 space-y-1">
+        <Link
+          href="/account"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+            pathname.startsWith("/account")
+              ? "bg-blue-50 text-blue-700 font-medium"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          )}
+        >
+          <span className="text-base">⚙</span>
+          Account
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors"
