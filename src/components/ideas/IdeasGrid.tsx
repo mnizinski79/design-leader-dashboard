@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import type { IdeaItem } from "@/types"
 import { IdeaCard } from "./IdeaCard"
 import { IdeaModal } from "./IdeaModal"
@@ -11,12 +12,14 @@ interface Props {
 }
 
 export function IdeasGrid({ initialIdeas }: Props) {
+  const router = useRouter()
   const [ideas, setIdeas] = useState<IdeaItem[]>(initialIdeas)
   const [showModal, setShowModal] = useState(false)
   const [categoryFilter, setCategoryFilter] = useState("")
 
   function handleCreate(idea: IdeaItem) {
     setIdeas(prev => [idea, ...prev])
+    router.refresh()
   }
 
   async function handleDelete(id: string) {
@@ -24,6 +27,7 @@ export function IdeasGrid({ initialIdeas }: Props) {
       const res = await fetch(`/api/ideas/${id}`, { method: "DELETE" })
       if (res.ok) {
         setIdeas(prev => prev.filter(i => i.id !== id))
+        router.refresh()
       }
     } catch {
       // network error — idea remains in list

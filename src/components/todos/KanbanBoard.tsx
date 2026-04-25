@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   DndContext,
   DragEndEvent,
@@ -47,6 +48,7 @@ interface Props {
 }
 
 export function KanbanBoard({ initialTodos }: Props) {
+  const router = useRouter()
   const [board, setBoard] = useState<Board>(() => buildBoard(initialTodos))
   const [activeId, setActiveId] = useState<string | null>(null)
   const [categoryFilter, setCategoryFilter] = useState("All")
@@ -177,6 +179,7 @@ export function KanbanBoard({ initialTodos }: Props) {
           ]
           return newBoard
         })
+        router.refresh()
         toast.success("Task updated")
       } catch {
         toast.error("Failed to update task")
@@ -194,6 +197,7 @@ export function KanbanBoard({ initialTodos }: Props) {
           ...prev,
           [created.status as TodoStatus]: [...prev[created.status as TodoStatus], created],
         }))
+        router.refresh()
         toast.success("Task created")
       } catch {
         toast.error("Failed to create task")
@@ -210,6 +214,7 @@ export function KanbanBoard({ initialTodos }: Props) {
           STATUSES.map(s => [s, prev[s].filter(t => t.id !== id)])
         ) as Board
       )
+      router.refresh()
       toast.success("Task deleted")
     } catch {
       toast.error("Failed to delete task")

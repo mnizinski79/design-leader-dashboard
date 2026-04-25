@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { TagSelector } from "./TagSelector"
 import type { NoteItem, NoteTagItem } from "@/types"
 
@@ -36,6 +37,7 @@ function CopyPromptButton({ label, buildPrompt }: { label: string; buildPrompt: 
 }
 
 export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: Props) {
+  const router = useRouter()
   const [title, setTitle] = useState(note.title)
   const [project, setProject] = useState(note.project)
   const [date, setDate] = useState(note.date)
@@ -61,11 +63,12 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
       if (res.ok) {
         const updated = await res.json()
         onUpdate(updated)
+        router.refresh()
       }
     } finally {
       setSaving(false)
     }
-  }, [note.id, onUpdate])
+  }, [note.id, onUpdate, router])
 
   const handleTagsChange = useCallback(async (tagIds: string[]) => {
     const res = await fetch(`/api/notes/${note.id}`, {
@@ -76,8 +79,9 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
     if (res.ok) {
       const updated = await res.json()
       onUpdate(updated)
+      router.refresh()
     }
-  }, [note.id, onUpdate])
+  }, [note.id, onUpdate, router])
 
   const handleCreateTag = useCallback(async (name: string): Promise<NoteTagItem> => {
     const res = await fetch("/api/tags", {
@@ -88,13 +92,17 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
     if (!res.ok) throw new Error("Failed to create tag")
     const tag = await res.json()
     onTagsChange([...allTags, tag])
+    router.refresh()
     return tag
-  }, [allTags, onTagsChange])
+  }, [allTags, onTagsChange, router])
 
   async function handleDelete() {
     if (!confirm(`Delete note "${note.title}"?`)) return
     const res = await fetch(`/api/notes/${note.id}`, { method: "DELETE" })
-    if (res.ok) onDelete(note.id)
+    if (res.ok) {
+      onDelete(note.id)
+      router.refresh()
+    }
   }
 
   return (

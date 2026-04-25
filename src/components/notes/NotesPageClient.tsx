@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { NotesSidebar } from "./NotesSidebar"
 import { NoteDetail } from "./NoteDetail"
 import { IdeasGrid } from "@/components/ideas/IdeasGrid"
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Props) {
+  const router = useRouter()
   const [notes, setNotes] = useState<NoteItem[]>(initialNotes)
   const [allTags, setAllTags] = useState<NoteTagItem[]>(initialTags)
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null)
@@ -36,6 +38,7 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
       const newNote: NoteItem = await res.json()
       setNotes(prev => [newNote, ...prev])
       setSelectedNoteId(newNote.id)
+      router.refresh()
     }
   }
 

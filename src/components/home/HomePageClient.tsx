@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import type { TodoItem, ConversationItem, DailyFocusItem } from "@/types"
 import type { HomeDesigner, HomeProject } from "@/app/(dashboard)/home/page"
@@ -57,6 +58,7 @@ export function HomePageClient({
   initialFocus,
   todayStr,
 }: Props) {
+  const router = useRouter()
   const [focus, setFocus] = useState<DailyFocusItem | null>(initialFocus)
   const [editingFocus, setEditingFocus] = useState(false)
   const [focusDraft, setFocusDraft] = useState("")
@@ -138,6 +140,7 @@ export function HomePageClient({
         const data = await res.json()
         setFocus({ id: data.id, userId: data.userId, date: data.date, text: data.text })
         setEditingFocus(false)
+        router.refresh()
       }
     } finally {
       setSavingFocus(false)
@@ -163,6 +166,7 @@ export function HomePageClient({
         setConvoPerson("")
         setConvoDescription("")
         setAddingConvo(false)
+        router.refresh()
       }
     } finally {
       setSavingConvo(false)
@@ -173,6 +177,7 @@ export function HomePageClient({
     const res = await fetch(`/api/conversations/${id}`, { method: "PATCH" })
     if (res.ok) {
       setConvos((prev) => prev.filter((c) => c.id !== id))
+      router.refresh()
     }
   }
 

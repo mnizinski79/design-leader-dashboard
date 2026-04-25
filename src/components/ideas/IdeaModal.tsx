@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import type { IdeaItem } from "@/types"
 import { IDEA_CATEGORIES } from "./categories"
 
@@ -10,6 +11,7 @@ interface Props {
 }
 
 export function IdeaModal({ onClose, onCreated }: Props) {
+  const router = useRouter()
   const [title, setTitle] = useState("")
   const [category, setCategory] = useState<string>(IDEA_CATEGORIES[0])
   const [submitting, setSubmitting] = useState(false)
@@ -34,6 +36,7 @@ export function IdeaModal({ onClose, onCreated }: Props) {
       }
       const idea: IdeaItem = await res.json()
       onCreated(idea)
+      router.refresh()
       onClose()
     } catch {
       setError("Something went wrong. Please try again.")

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { DesignerItem } from "@/types"
 import { ROLE_LEVELS, DREYFUS_LABELS } from "@/components/coaching/lib/coaching-framework"
 
@@ -12,6 +13,7 @@ interface Props {
 const DREYFUS_OPTIONS = Object.entries(DREYFUS_LABELS) as [string, string][]
 
 export function AddDesignerModal({ onClose, onCreated }: Props) {
+  const router = useRouter()
   const [name, setName] = useState("")
   const [role, setRole] = useState("")
   const [roleLevel, setRoleLevel] = useState(ROLE_LEVELS[0])
@@ -36,6 +38,7 @@ export function AddDesignerModal({ onClose, onCreated }: Props) {
       }
       const designer: DesignerItem = await res.json()
       onCreated(designer)
+      router.refresh()
     } catch {
       setError("Network error. Please try again.")
     } finally {

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { ProjectItem, ProjectDecisionItem } from "@/types"
 import { ProjectCard } from "@/components/projects/ProjectCard"
 import { ProjectModal, ProjectFormData } from "@/components/projects/ProjectModal"
@@ -18,6 +19,7 @@ const STATUS_ORDER: Record<string, number> = {
 }
 
 export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
+  const router = useRouter()
   const [projects, setProjects] = useState<ProjectItem[]>(initialProjects)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<ProjectItem | undefined>(undefined)
@@ -58,6 +60,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
       if (res.ok) {
         const updated: ProjectItem = await res.json()
         updateProject(editingProject.id, updated)
+        router.refresh()
       }
     } else {
       const res = await fetch("/api/projects", {
@@ -76,6 +79,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
       if (res.ok) {
         const created: ProjectItem = await res.json()
         setProjects((prev) => [...prev, created])
+        router.refresh()
       }
     }
     setModalOpen(false)
@@ -85,6 +89,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
     const res = await fetch(`/api/projects/${id}`, { method: "DELETE" })
     if (res.ok) {
       setProjects((prev) => prev.filter((p) => p.id !== id))
+      router.refresh()
     }
   }
 
@@ -103,6 +108,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
             : p
         )
       )
+      router.refresh()
     }
   }
 
@@ -118,6 +124,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
             : p
         )
       )
+      router.refresh()
     }
   }
 
