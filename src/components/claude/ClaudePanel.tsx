@@ -143,7 +143,7 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
             <div
               className={`max-w-[85%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap ${
                 msg.role === "user"
-                  ? "bg-[#eff6ff] text-[#1d4ed8]"
+                  ? "bg-[#e8f0fe] text-[#1d4ed8]"
                   : "bg-[#f0f0f5] text-[#1d1d1f]"
               }`}
             >
