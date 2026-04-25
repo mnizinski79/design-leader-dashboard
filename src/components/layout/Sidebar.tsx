@@ -6,7 +6,7 @@ import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 
 const NAV_ITEMS = [
-  { href: "/", label: "Home", icon: "⌂" },
+  { href: "/home", label: "Home", icon: "⌂" },
   { href: "/todos", label: "To-Do", icon: "✓" },
   { href: "/notes", label: "Notes & Ideas", icon: "✎" },
   { href: "/coaching", label: "1:1 & Coaching", icon: "◈" },
@@ -26,7 +26,7 @@ export function Sidebar() {
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+          const active = pathname.startsWith(item.href)
           return (
             <Link
               key={item.href}
