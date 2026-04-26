@@ -14,6 +14,9 @@ export function SplitButton({ label, onAsk, onCopy, className = "" }: Props) {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (copyTimerRef.current) clearTimeout(copyTimerRef.current) }, [])
 
   useEffect(() => {
     function handleOutsideClick(e: MouseEvent) {
@@ -29,7 +32,8 @@ export function SplitButton({ label, onAsk, onCopy, className = "" }: Props) {
     onCopy()
     setCopied(true)
     setOpen(false)
-    setTimeout(() => setCopied(false), 2000)
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current)
+    copyTimerRef.current = setTimeout(() => setCopied(false), 2000)
   }
 
   return (

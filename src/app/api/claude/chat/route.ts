@@ -29,6 +29,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "messages required" }, { status: 400 })
   }
 
+  const validRoles = new Set(["user", "assistant"])
+  const invalid = messages.some(
+    (m) =>
+      typeof m !== "object" ||
+      m === null ||
+      !validRoles.has((m as Record<string, unknown>).role as string) ||
+      typeof (m as Record<string, unknown>).content !== "string"
+  )
+  if (invalid) {
+    return NextResponse.json({ error: "invalid message format" }, { status: 400 })
+  }
+
   const typedMessages = messages as { role: "user" | "assistant"; content: string }[]
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })

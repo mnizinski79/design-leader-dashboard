@@ -83,8 +83,11 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
         reader.releaseLock()
       }
     } catch (e) {
-      if ((e as Error).name === "AbortError") return
-      setMessages((prev) => prev.slice(0, -1)) // remove empty placeholder
+      if ((e as Error).name === "AbortError") {
+        setMessages((prev) => prev.slice(0, -1)) // remove empty placeholder on abort
+        return
+      }
+      setMessages((prev) => prev.slice(0, -1)) // remove empty placeholder on error
       setError((e as Error).message || "Something went wrong. Try again.")
     } finally {
       setStreaming(false)
