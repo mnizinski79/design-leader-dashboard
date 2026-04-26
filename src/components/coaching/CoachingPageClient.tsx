@@ -220,7 +220,21 @@ export function CoachingPageClient({ initialDesigners }: Props) {
   }
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col h-full">
+      <div className="shrink-0 pb-4 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">1:1 &amp; Coaching</h1>
+          <p className="text-slate-500 mt-0.5 text-sm">Track growth, skills, and coaching notes for each designer</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowAddModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+        >
+          + Add Designer
+        </button>
+      </div>
+      <div className="flex flex-1 overflow-hidden">
       <DesignerList
         designers={designers}
         selectedId={selectedId}
@@ -228,7 +242,6 @@ export function CoachingPageClient({ initialDesigners }: Props) {
           setSelectedId(id)
           setActiveTab("skills")
         }}
-        onAdd={() => setShowAddModal(true)}
       />
 
       {!selected ? (
@@ -273,6 +286,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
         prompt={claudePrompt}
         contextLabel={claudeLabel}
       />
+      </div>
     </div>
   )
 }

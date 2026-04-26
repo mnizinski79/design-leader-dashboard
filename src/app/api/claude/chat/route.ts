@@ -47,7 +47,12 @@ export async function POST(req: Request) {
 
   const stream = client.messages.stream({
     model: "claude-sonnet-4-6",
-    max_tokens: 2048,
+    max_tokens: 4096,
+    system:
+      "You are a coaching assistant for a design leader. Respond concisely and directly — this is a narrow side panel, not a document. " +
+      "Use bullet lists or numbered lists instead of tables. Avoid headers unless the response has 4+ distinct sections. " +
+      "Aim for responses that feel like a thoughtful colleague talking, not a consulting report. " +
+      "If asked a follow-up question, keep it even shorter.",
     messages: typedMessages,
   })
 

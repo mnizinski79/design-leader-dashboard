@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { X, ChevronDown, ChevronRight } from "lucide-react"
 import { DesignerItem, DesignerGoalItem, GoalStatus } from "@/types"
 
 interface Props {
@@ -202,10 +203,10 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
                   <button
                     type="button"
                     onClick={() => toggleExpand(g.id)}
-                    className="text-muted-foreground text-xs shrink-0 w-4"
+                    className="text-muted-foreground shrink-0 w-4"
                     aria-label={isExpanded ? "Collapse goal" : "Expand goal"}
                   >
-                    {isExpanded ? "▾" : "▸"}
+                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   </button>
                 )}
                 {!hasDetails && <div className="w-4" />}
@@ -223,10 +224,10 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
                 <button
                   type="button"
                   onClick={() => handleDelete(g.id)}
-                  className="text-muted-foreground hover:text-red-600 transition-colors text-xs ml-1"
+                  className="text-muted-foreground hover:text-red-600 transition-colors ml-1"
                   aria-label="Delete goal"
                 >
-                  ✕
+                  <X size={14} />
                 </button>
               </div>
               {isExpanded && (

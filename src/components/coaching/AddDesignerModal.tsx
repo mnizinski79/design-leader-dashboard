@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { X } from "lucide-react"
 import { DesignerItem } from "@/types"
 import { ROLE_LEVELS, DREYFUS_LABELS } from "@/components/coaching/lib/coaching-framework"
 
@@ -57,7 +58,7 @@ export function AddDesignerModal({ onClose, onCreated }: Props) {
             className="text-muted-foreground hover:text-foreground"
             aria-label="Close"
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
 

@@ -9,10 +9,9 @@ interface Props {
   allTags: NoteTagItem[]
   selectedId: string | null
   onSelect: (id: string) => void
-  onNew: () => void
 }
 
-export function NotesSidebar({ notes, allTags, selectedId, onSelect, onNew }: Props) {
+export function NotesSidebar({ notes, allTags, selectedId, onSelect }: Props) {
   const [search, setSearch] = useState("")
   const [project, setProject] = useState("")
   const [tagFilter, setTagFilter] = useState("")
@@ -34,12 +33,6 @@ export function NotesSidebar({ notes, allTags, selectedId, onSelect, onNew }: Pr
   return (
     <div className="flex flex-col h-full">
       <div className="p-3 border-b border-slate-100 space-y-2">
-        <button
-          onClick={onNew}
-          className="w-full bg-blue-600 text-white text-sm font-medium py-2 px-3 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          + New Note
-        </button>
         <input
           type="text"
           placeholder="Search notes..."

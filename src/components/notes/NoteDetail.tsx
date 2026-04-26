@@ -170,13 +170,13 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
             label="Ask Claude: Summary"
             onAsk={() =>
               openClaude(
-                `Please summarize the following note and extract the key insights and decisions:\n\nTitle: ${title}\nProject: ${project}\nDate: ${date}\n\n${body}`,
+                `You are helping a design manager summarize a meeting or project note. Pull out what actually matters — key decisions, open questions, and insights worth remembering.\n\nTitle: ${title}\nProject: ${project}\nDate: ${date}\n\n${body}\n\nPlease summarize this note and extract the key insights and decisions.`,
                 `Summary — ${title}`
               )
             }
             onCopy={() =>
               navigator.clipboard
-                .writeText(`Please summarize the following note and extract the key insights and decisions:\n\nTitle: ${title}\nProject: ${project}\nDate: ${date}\n\n${body}`)
+                .writeText(`You are helping a design manager summarize a meeting or project note. Pull out what actually matters — key decisions, open questions, and insights worth remembering.\n\nTitle: ${title}\nProject: ${project}\nDate: ${date}\n\n${body}\n\nPlease summarize this note and extract the key insights and decisions.`)
                 .catch(() => {})
             }
           />
@@ -184,13 +184,13 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
             label="Ask Claude: Actions"
             onAsk={() =>
               openClaude(
-                `Please extract all action items, tasks, and next steps from the following note. Format them as a numbered list:\n\nTitle: ${title}\nProject: ${project}\n\n${body}`,
+                `You are helping a design manager extract action items from a meeting or project note. Be concrete — specific tasks, owners if mentioned, and clear next steps only.\n\nTitle: ${title}\nProject: ${project}\n\n${body}\n\nPlease extract all action items, tasks, and next steps as a numbered list.`,
                 `Actions — ${title}`
               )
             }
             onCopy={() =>
               navigator.clipboard
-                .writeText(`Please extract all action items, tasks, and next steps from the following note. Format them as a numbered list:\n\nTitle: ${title}\nProject: ${project}\n\n${body}`)
+                .writeText(`You are helping a design manager extract action items from a meeting or project note. Be concrete — specific tasks, owners if mentioned, and clear next steps only.\n\nTitle: ${title}\nProject: ${project}\n\n${body}\n\nPlease extract all action items, tasks, and next steps as a numbered list.`)
                 .catch(() => {})
             }
           />

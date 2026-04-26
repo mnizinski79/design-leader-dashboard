@@ -19,6 +19,7 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
   const [allTags, setAllTags] = useState<NoteTagItem[]>(initialTags)
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"notes" | "ideas">("notes")
+  const [showIdeaModal, setShowIdeaModal] = useState(false)
 
   const selectedNote = notes.find(n => n.id === selectedNoteId) ?? null
 
@@ -61,8 +62,12 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
 
   return (
     <div className="h-full flex flex-col">
-      {/* Tabs */}
-      <div className="flex border-b border-slate-200 shrink-0">
+      <div className="shrink-0 pb-4">
+        <h1 className="text-2xl font-bold text-slate-900">Notes &amp; Ideas</h1>
+        <p className="text-slate-500 mt-0.5 text-sm">Capture meeting notes, insights, and design ideas</p>
+      </div>
+      {/* Tabs + Add button */}
+      <div className="flex items-center border-b border-slate-200 shrink-0">
         <button
           type="button"
           onClick={() => setActiveTab("notes")}
@@ -85,6 +90,14 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
         >
           Ideas
         </button>
+        <div className="ml-auto pr-0 pb-1">
+          <button
+            onClick={activeTab === "notes" ? handleNewNote : () => setShowIdeaModal(true)}
+            className="bg-blue-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-blue-700 transition-colors"
+          >
+            {activeTab === "notes" ? "+ New Note" : "+ New Idea"}
+          </button>
+        </div>
       </div>
 
       {/* Tab content */}
@@ -98,7 +111,6 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
                 allTags={allTags}
                 selectedId={selectedNoteId}
                 onSelect={handleSelectNote}
-                onNew={handleNewNote}
               />
             </div>
 
@@ -121,7 +133,11 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
             </div>
           </div>
         ) : (
-          <IdeasGrid initialIdeas={initialIdeas} />
+          <IdeasGrid
+            initialIdeas={initialIdeas}
+            isModalOpen={showIdeaModal}
+            onModalClose={() => setShowIdeaModal(false)}
+          />
         )}
       </div>
     </div>

@@ -129,13 +129,13 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 overflow-y-auto pb-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#1d1d1f]">Projects</h1>
         <button
           onClick={openAdd}
-          className="bg-[#0071e3] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+          className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
           + Add Project
         </button>

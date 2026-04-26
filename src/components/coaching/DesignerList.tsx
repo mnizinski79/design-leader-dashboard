@@ -7,7 +7,6 @@ interface Props {
   designers: DesignerItem[]
   selectedId: string | null
   onSelect: (id: string) => void
-  onAdd: () => void
 }
 
 const STAGE_COLORS: Record<DreyfusStage, string> = {
@@ -18,18 +17,9 @@ const STAGE_COLORS: Record<DreyfusStage, string> = {
   EXPERT: "bg-amber-100 text-amber-700",
 }
 
-export function DesignerList({ designers, selectedId, onSelect, onAdd }: Props) {
+export function DesignerList({ designers, selectedId, onSelect }: Props) {
   return (
     <div className="w-64 shrink-0 border-r flex flex-col h-full">
-      <div className="p-3 border-b">
-        <button
-          type="button"
-          onClick={onAdd}
-          className="w-full text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-2 transition-colors"
-        >
-          + Add Designer
-        </button>
-      </div>
 
       <div className="flex-1 overflow-y-auto">
         {designers.length === 0 && (

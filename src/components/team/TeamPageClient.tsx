@@ -3,6 +3,7 @@
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Users, GripVertical } from "lucide-react"
 import { DREYFUS_LABELS } from "@/components/coaching/lib/coaching-framework"
 import { DesignerModal, type DesignerFormData } from "@/components/team/DesignerModal"
 import type { DesignerItem } from "@/types"
@@ -153,7 +154,7 @@ export function TeamPageClient({ initialDesigners }: Props) {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 max-w-5xl">
+    <div className="flex-1 overflow-y-auto pb-8 max-w-5xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -164,7 +165,7 @@ export function TeamPageClient({ initialDesigners }: Props) {
         </div>
         <button
           onClick={openAdd}
-          className="bg-[#0071e3] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+          className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
           + Add designer
         </button>
@@ -173,7 +174,7 @@ export function TeamPageClient({ initialDesigners }: Props) {
       {/* Empty state */}
       {designers.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-48 text-[#6e6e73]">
-          <span className="text-3xl mb-2 opacity-30">◉</span>
+          <Users size={32} className="mb-2 opacity-30" />
           <p className="text-sm">No designers yet — add one to get started</p>
         </div>
       ) : (
@@ -205,8 +206,8 @@ export function TeamPageClient({ initialDesigners }: Props) {
               ].join(" ")}
             >
               {/* Drag handle */}
-              <div className="text-[#c7c7cc] cursor-grab select-none text-center" title="Drag to reorder">
-                ⠿
+              <div className="text-[#c7c7cc] cursor-grab select-none flex justify-center" title="Drag to reorder">
+                <GripVertical size={16} />
               </div>
 
               {/* Avatar + name */}

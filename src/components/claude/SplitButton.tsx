@@ -41,7 +41,7 @@ export function SplitButton({ label, onAsk, onCopy, className = "" }: Props) {
       <button
         type="button"
         onClick={onAsk}
-        className="text-xs px-3 py-1.5 bg-[#0071e3] hover:bg-blue-600 text-white rounded-l-md transition-colors font-medium whitespace-nowrap"
+        className="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-l-md transition-colors font-medium whitespace-nowrap"
       >
         {label}
       </button>
@@ -49,7 +49,7 @@ export function SplitButton({ label, onAsk, onCopy, className = "" }: Props) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="More options"
-        className="text-xs px-1.5 py-1.5 bg-[#0071e3] hover:bg-blue-600 text-white rounded-r-md border-l border-blue-400/50 transition-colors"
+        className="text-xs px-1.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-r-md border-l border-blue-400/50 transition-colors"
       >
         <ChevronDown size={12} />
       </button>

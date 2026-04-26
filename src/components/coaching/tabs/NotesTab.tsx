@@ -61,7 +61,9 @@ export function NotesTab({ designer, onNoteAdd, onNoteUpdate, onNoteDelete, onOp
       })
       .join("\n\n---\n\n")
 
-    return `The following are manager notes for ${designer.name} (${designer.role}):
+    return `You are helping a design manager extract action items from their private coaching notes for a direct report. Be specific — pull out concrete tasks, follow-ups, and commitments, not vague themes.
+
+Manager notes for ${designer.name} (${designer.role}):
 
 ${allNotes || "No notes recorded yet."}
 

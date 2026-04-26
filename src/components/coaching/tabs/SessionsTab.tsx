@@ -65,7 +65,9 @@ export function SessionsTab({ designer, onSessionAdd, onSessionDelete, onOpenCla
       ? recent.map((s) => `${s.date} [${s.flag ?? "no flag"}]: ${s.notes}`).join("\n")
       : "No sessions recorded yet."
 
-    return `Designer: ${designer.name}, ${designer.role} (${designer.roleLevel})
+    return `You are helping a design manager identify patterns across their 1:1 sessions with a direct report. Surface what's actually happening — growth, blockers, recurring themes — not just a recap.
+
+Designer: ${designer.name}, ${designer.role} (${designer.roleLevel})
 Dreyfus Stage: ${designer.dreyfusStage ?? "Not set"} — ${stageDesc}
 
 Recent Sessions:

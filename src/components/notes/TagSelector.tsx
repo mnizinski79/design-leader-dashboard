@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { X } from "lucide-react"
 import type { NoteTagItem } from "@/types"
 
 interface Props {
@@ -56,10 +57,10 @@ export function TagSelector({ allTags, selectedTagIds, onChange, onCreateTag }: 
             {t.name}
             <button
               onClick={() => remove(t.id)}
-              className="hover:text-blue-900 font-bold leading-none"
+              className="hover:text-blue-900 leading-none"
               aria-label={`Remove tag ${t.name}`}
             >
-              ×
+              <X size={10} />
             </button>
           </span>
         ))}

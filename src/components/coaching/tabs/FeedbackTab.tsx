@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { X } from "lucide-react"
 import { DesignerItem, DesignerFeedbackItem } from "@/types"
 
 interface Props {
@@ -130,10 +131,10 @@ export function FeedbackTab({ designer, onFeedbackAdd, onFeedbackDelete }: Props
               <button
                 type="button"
                 onClick={() => handleDelete(f.id)}
-                className="text-muted-foreground hover:text-red-600 transition-colors text-xs"
+                className="text-muted-foreground hover:text-red-600 transition-colors"
                 aria-label="Delete feedback"
               >
-                ✕
+                <X size={14} />
               </button>
             </div>
             <p className="text-sm text-muted-foreground whitespace-pre-wrap">{f.body}</p>

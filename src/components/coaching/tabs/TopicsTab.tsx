@@ -52,7 +52,9 @@ export function TopicsTab({ designer, onTopicAdd, onTopicToggle, onTopicDelete, 
       ? openTopics.map((t) => `- ${t.title}`).join("\n")
       : "No open topics currently."
 
-    return `Designer: ${designer.name}, ${designer.role} (${designer.roleLevel})
+    return `You are helping a design manager prepare questions for an upcoming 1:1 with a direct report. Generate questions that will spark honest, growth-oriented conversation — not surface-level check-ins.
+
+Designer: ${designer.name}, ${designer.role} (${designer.roleLevel})
 Dreyfus Stage: ${designer.dreyfusStage ?? "Not set"} — ${stageDesc}
 
 Open 1:1 Topics:

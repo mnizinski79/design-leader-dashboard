@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Check, User, ChevronRight, ClipboardList, Pencil, Plus } from "lucide-react"
 import type { TodoItem, ConversationItem, DailyFocusItem } from "@/types"
 import type { HomeDesigner, HomeProject } from "@/app/(dashboard)/home/page"
 
@@ -254,7 +255,9 @@ export function HomePageClient({
                 className="ml-auto text-[11px] font-medium px-3 py-1 rounded-full border text-[#0071E3] bg-white/60 hover:bg-white/90 transition-colors whitespace-nowrap"
                 style={{ borderColor: "rgba(0,113,227,0.3)" }}
               >
-                {focusIsToday && focus?.text ? "✎ Update focus" : "+ Set focus"}
+                {focusIsToday && focus?.text
+                ? <span className="flex items-center gap-1"><Pencil size={11} /> Update focus</span>
+                : <span className="flex items-center gap-1"><Plus size={11} /> Set focus</span>}
               </button>
             </div>
           </>
@@ -278,7 +281,7 @@ export function HomePageClient({
               <button
                 onClick={saveFocus}
                 disabled={savingFocus || !focusDraft.trim()}
-                className="text-sm px-4 py-1.5 rounded-lg bg-[#0071e3] text-white hover:bg-blue-600 disabled:opacity-50"
+                className="text-sm px-4 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
               >
                 {savingFocus ? "Saving…" : "Set focus"}
               </button>
@@ -297,7 +300,7 @@ export function HomePageClient({
           <div className={cardClass}>
             <div className="flex items-center justify-between mb-3">
               <span className={cardTitle}>Top priorities</span>
-              <Link href="/todos" className={linkBtn}>All tasks →</Link>
+              <Link href="/todos" className={linkBtn}>All tasks <ChevronRight size={12} className="inline" /></Link>
             </div>
 
             {isMonday() && (
@@ -305,7 +308,7 @@ export function HomePageClient({
                 className="flex items-start gap-3 rounded-lg p-3 mb-2"
                 style={{ background: "linear-gradient(135deg, #EEF2FF, #F5F3FF)" }}
               >
-                <span className="text-lg flex-shrink-0">📋</span>
+                <ClipboardList size={18} className="flex-shrink-0 text-[#3730A3]" />
                 <div>
                   <p className="text-[13px] font-medium text-[#3730A3] leading-snug">
                     Review weekly demo — what should the team present today?
@@ -318,7 +321,7 @@ export function HomePageClient({
             )}
 
             {top3.length === 0 && !isMonday() ? (
-              <div className="py-4 text-center text-[12px] text-[#6e6e73]">✓ Nothing open — nice work</div>
+              <div className="py-4 text-[12px] text-[#6e6e73] flex items-center justify-center gap-1"><Check size={12} /> Nothing open — nice work</div>
             ) : (
               top3.map((t, i) => (
                 <div key={t.id} className="flex items-start gap-3 py-2 border-b border-[#f0f0f5] last:border-0">
@@ -348,11 +351,11 @@ export function HomePageClient({
           <div className={cardClass}>
             <div className="flex items-center justify-between mb-3">
               <span className={cardTitle}>Projects needing attention</span>
-              <Link href="/projects" className={linkBtn}>All →</Link>
+              <Link href="/projects" className={linkBtn}>All <ChevronRight size={12} className="inline" /></Link>
             </div>
 
             {projects.length === 0 ? (
-              <div className="py-3 text-center text-[12px] text-[#6e6e73]">✓ All projects on track</div>
+              <div className="py-3 text-[12px] text-[#6e6e73] flex items-center justify-center gap-1"><Check size={12} /> All projects on track</div>
             ) : (
               projects.map((p) => {
                 const dotColor =
@@ -432,7 +435,7 @@ export function HomePageClient({
                   <button
                     onClick={handleAddConvo}
                     disabled={savingConvo || !convoTopic.trim() || !convoPerson.trim()}
-                    className="text-xs px-3 py-1.5 bg-[#0071e3] text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                    className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                   >
                     {savingConvo ? "Saving…" : "Add"}
                   </button>
@@ -456,7 +459,7 @@ export function HomePageClient({
                         className="w-5 h-5 rounded-full flex-shrink-0 mt-0.5 border-2 border-[#0071E3] hover:bg-[#0071E3] group transition-colors"
                         title="Mark as done"
                       >
-                        <span className="hidden group-hover:block text-white text-[10px] leading-none">✓</span>
+                        <Check size={10} className="hidden group-hover:block text-white" />
                       </button>
                       <div
                         className="flex-1 min-w-0 cursor-pointer"
@@ -469,8 +472,8 @@ export function HomePageClient({
                           </p>
                         )}
                         {c.person && (
-                          <span className="inline-block mt-1 text-[11px] font-medium bg-[#E0F2FE] text-[#0071E3] px-2 py-0.5 rounded-full">
-                            👤 {c.person}
+                          <span className="inline-flex items-center gap-1 mt-1 text-[11px] font-medium bg-[#E0F2FE] text-[#0071E3] px-2 py-0.5 rounded-full">
+                            <User size={11} /> {c.person}
                           </span>
                         )}
                       </div>
@@ -494,7 +497,7 @@ export function HomePageClient({
           <div className={cardClass}>
             <div className="flex items-center justify-between mb-3">
               <span className={cardTitle}>Team pulse</span>
-              <Link href="/coaching" className={linkBtn}>1:1s →</Link>
+              <Link href="/coaching" className={linkBtn}>1:1s <ChevronRight size={12} className="inline" /></Link>
             </div>
 
             {designers.length === 0 ? (
@@ -530,9 +533,9 @@ export function HomePageClient({
                     </div>
                     <Link
                       href="/coaching"
-                      className="text-[11px] px-2.5 py-1 border border-[#d2d2d7] rounded-lg text-[#6e6e73] hover:bg-slate-50 flex-shrink-0"
+                      className="inline-flex items-center gap-0.5 text-[11px] px-2.5 py-1 border border-[#d2d2d7] rounded-lg text-[#6e6e73] hover:bg-slate-50 flex-shrink-0"
                     >
-                      1:1 →
+                      1:1 <ChevronRight size={12} />
                     </Link>
                   </div>
                 )
@@ -544,11 +547,11 @@ export function HomePageClient({
           <div className={cardClass}>
             <div className="flex items-center justify-between mb-3">
               <span className={cardTitle}>Open tasks</span>
-              <Link href="/todos" className={linkBtn}>Kanban →</Link>
+              <Link href="/todos" className={linkBtn}>Kanban <ChevronRight size={12} className="inline" /></Link>
             </div>
 
             {openTasksList.length === 0 ? (
-              <div className="py-3 text-center text-[12px] text-[#6e6e73]">✓ All done!</div>
+              <div className="py-3 text-[12px] text-[#6e6e73] flex items-center justify-center gap-1"><Check size={12} /> All done!</div>
             ) : (
               openTasksList.map((t) => (
                 <div key={t.id} className="flex items-start gap-3 py-2 border-b border-[#f0f0f5] last:border-0">

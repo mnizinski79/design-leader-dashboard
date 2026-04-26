@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { X, Send } from "lucide-react"
+import ReactMarkdown from "react-markdown"
 
 interface Message {
   role: "assistant" | "user"
@@ -144,13 +145,31 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[85%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap ${
+              className={`max-w-[85%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed ${
                 msg.role === "user"
                   ? "bg-[#e8f0fe] text-[#1d4ed8]"
                   : "bg-[#f0f0f5] text-[#1d1d1f]"
               }`}
             >
-              {msg.content}
+              {msg.role === "assistant" ? (
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc pl-4 mb-1 space-y-0.5">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-4 mb-1 space-y-0.5">{children}</ol>,
+                    li: ({ children }) => <li>{children}</li>,
+                    strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                    em: ({ children }) => <em className="italic">{children}</em>,
+                    h1: ({ children }) => <p className="font-bold mt-1 mb-0.5">{children}</p>,
+                    h2: ({ children }) => <p className="font-bold mt-1 mb-0.5">{children}</p>,
+                    h3: ({ children }) => <p className="font-semibold mt-1 mb-0.5">{children}</p>,
+                  }}
+                >
+                  {msg.content}
+                </ReactMarkdown>
+              ) : (
+                msg.content
+              )}
               {msg.role === "assistant" &&
                 streaming &&
                 i === visibleMessages.length - 1 && (
@@ -195,7 +214,7 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
             onClick={handleSend}
             disabled={streaming || !input.trim()}
             aria-label="Send"
-            className="bg-[#0071e3] text-white rounded-xl p-2 hover:bg-blue-600 transition-colors disabled:opacity-40 shrink-0"
+            className="bg-blue-600 text-white rounded-xl p-2 hover:bg-blue-700 transition-colors disabled:opacity-40 shrink-0"
           >
             <Send size={14} />
           </button>

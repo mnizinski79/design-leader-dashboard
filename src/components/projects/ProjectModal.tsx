@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { X } from "lucide-react"
 import { ProjectItem, ProjectPhase, ProjectStatus } from "@/types"
 
 export interface ProjectFormData {
@@ -178,18 +179,37 @@ export function ProjectModal({ isOpen, onClose, onSave, project, allDesigners }:
           {allDesigners.length > 0 && (
             <div>
               <label className={labelClass}>Designers</label>
-              <div className="border border-[#d2d2d7] rounded-lg p-2 space-y-1 max-h-32 overflow-y-auto">
-                {allDesigners.map((d) => (
-                  <label key={d.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 rounded px-1 py-0.5">
-                    <input
-                      type="checkbox"
-                      checked={form.designerIds.includes(d.id)}
-                      onChange={() => toggleDesigner(d.id)}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-[#1d1d1f]">{d.name}</span>
-                  </label>
-                ))}
+              <div className="flex flex-wrap items-center gap-1.5 min-h-[34px] px-2 py-1.5 border border-[#d2d2d7] rounded-lg">
+                {form.designerIds.map((id) => {
+                  const d = allDesigners.find((d) => d.id === id)
+                  if (!d) return null
+                  return (
+                    <span key={id} className="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-700 rounded-full px-2.5 py-1">
+                      {d.name}
+                      <button
+                        type="button"
+                        onClick={() => toggleDesigner(id)}
+                        className="hover:text-blue-900"
+                        aria-label={`Remove ${d.name}`}
+                      >
+                        <X size={10} />
+                      </button>
+                    </span>
+                  )
+                })}
+                {allDesigners.filter((d) => !form.designerIds.includes(d.id)).length > 0 && (
+                  <select
+                    value=""
+                    onChange={(e) => { if (e.target.value) toggleDesigner(e.target.value) }}
+                    className="text-xs text-[#0071E3] bg-transparent border-none outline-none cursor-pointer"
+                  >
+                    <option value="">+ Add designer</option>
+                    {allDesigners
+                      .filter((d) => !form.designerIds.includes(d.id))
+                      .map((d) => <option key={d.id} value={d.id}>{d.name}</option>)
+                    }
+                  </select>
+                )}
               </div>
             </div>
           )}
@@ -230,7 +250,7 @@ export function ProjectModal({ isOpen, onClose, onSave, project, allDesigners }:
           <button
             onClick={handleSave}
             disabled={!form.name.trim()}
-            className="px-4 py-2 text-sm text-white bg-[#0071e3] rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Save
           </button>
