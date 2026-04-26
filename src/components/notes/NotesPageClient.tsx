@@ -61,7 +61,7 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col max-w-5xl">
       <div className="shrink-0 pb-4">
         <h1 className="text-2xl font-bold text-slate-900">Notes &amp; Ideas</h1>
         <p className="text-slate-500 mt-0.5 text-sm">Capture meeting notes, insights, and design ideas</p>

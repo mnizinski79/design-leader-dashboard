@@ -23,6 +23,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
   const [projects, setProjects] = useState<ProjectItem[]>(initialProjects)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<ProjectItem | undefined>(undefined)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const sorted = [...projects].sort(
     (a, b) => (STATUS_ORDER[a.status] ?? 99) - (STATUS_ORDER[b.status] ?? 99)
@@ -34,55 +35,68 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
 
   function openAdd() {
     setEditingProject(undefined)
+    setSaveError(null)
     setModalOpen(true)
   }
 
   function openEdit(project: ProjectItem) {
     setEditingProject(project)
+    setSaveError(null)
     setModalOpen(true)
   }
 
+  function buildBody(data: ProjectFormData) {
+    return JSON.stringify({
+      ...data,
+      description: data.description || null,
+      dueDate: data.dueDate || null,
+      sprintSnapshot: data.sprintSnapshot || null,
+      stakeholders: data.stakeholders || null,
+      attention: data.attention || null,
+      blockers: data.blockers || null,
+      details: data.details || null,
+    })
+  }
+
   async function handleSave(data: ProjectFormData) {
-    if (editingProject) {
-      const res = await fetch(`/api/projects/${editingProject.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          description: data.description || null,
-          dueDate: data.dueDate || null,
-          sprintSnapshot: data.sprintSnapshot || null,
-          stakeholders: data.stakeholders || null,
-          attention: data.attention || null,
-          blockers: data.blockers || null,
-        }),
-      })
-      if (res.ok) {
+    setSaveError(null)
+    try {
+      if (editingProject) {
+        const res = await fetch(`/api/projects/${editingProject.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: buildBody(data),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          console.error("Project update failed", res.status, err)
+          setSaveError(`Save failed (${res.status}) — check console for details`)
+          return
+        }
         const updated: ProjectItem = await res.json()
         updateProject(editingProject.id, updated)
         router.refresh()
-      }
-    } else {
-      const res = await fetch("/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          description: data.description || null,
-          dueDate: data.dueDate || null,
-          sprintSnapshot: data.sprintSnapshot || null,
-          stakeholders: data.stakeholders || null,
-          attention: data.attention || null,
-          blockers: data.blockers || null,
-        }),
-      })
-      if (res.ok) {
+      } else {
+        const res = await fetch("/api/projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: buildBody(data),
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          console.error("Project create failed", res.status, err)
+          setSaveError(`Save failed (${res.status}) — check console for details`)
+          return
+        }
         const created: ProjectItem = await res.json()
         setProjects((prev) => [...prev, created])
         router.refresh()
       }
+      setModalOpen(false)
+    } catch (e) {
+      console.error("Project save error", e)
+      setSaveError("Network error — check console for details")
     }
-    setModalOpen(false)
   }
 
   async function handleDelete(id: string) {
@@ -112,6 +126,27 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
     }
   }
 
+  async function handleDetailsChange(projectId: string, details: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ details: details || null }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        console.error("details save failed", res.status, err)
+        return false
+      }
+      updateProject(projectId, { details: details || null })
+      router.refresh()
+      return true
+    } catch (e) {
+      console.error("details save error", e)
+      return false
+    }
+  }
+
   async function handleDecisionDelete(projectId: string, decisionId: string) {
     const res = await fetch(`/api/projects/${projectId}/decisions/${decisionId}`, {
       method: "DELETE",
@@ -129,7 +164,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto pb-8">
+    <div className="flex-1 overflow-y-auto pb-8 max-w-5xl">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-[#1d1d1f]">Projects</h1>
@@ -147,7 +182,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
           No projects yet — add your first one
         </div>
       ) : (
-        <div className="space-y-4 max-w-3xl">
+        <div className="space-y-4">
           {sorted.map((project) => (
             <ProjectCard
               key={project.id}
@@ -156,6 +191,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
               onDelete={handleDelete}
               onDecisionAdd={handleDecisionAdd}
               onDecisionDelete={handleDecisionDelete}
+              onDetailsChange={handleDetailsChange}
             />
           ))}
         </div>
@@ -168,6 +204,7 @@ export function ProjectsPageClient({ initialProjects, allDesigners }: Props) {
         onSave={handleSave}
         project={editingProject}
         allDesigners={allDesigners}
+        saveError={saveError}
       />
     </div>
   )

@@ -44,7 +44,7 @@ const fakeProject = {
   sprintSnapshot: null,
   stakeholders: null,
   attention: null,
-  blockers: null,
+  blockers: null, details: null,
   createdAt: new Date("2026-04-24"),
   decisions: [],
   designers: [],

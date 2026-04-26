@@ -170,6 +170,7 @@ export interface ProjectItem {
   stakeholders: string | null
   attention: string | null
   blockers: string | null
+  details: string | null
   createdAt: string
   decisions: ProjectDecisionItem[]
   designers: ProjectDesignerItem[]

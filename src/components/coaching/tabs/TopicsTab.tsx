@@ -68,7 +68,7 @@ Please generate 6 tailored coaching questions for my next 1:1 with ${designer.na
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">1:1 Topics</h3>
         <SplitButton
-          label="Ask Claude: Questions"
+          label="Generate 1:1 Questions"
           onAsk={() => onOpenClaude(buildPrompt(), `1:1 Questions — ${designer.name}`)}
           onCopy={() => navigator.clipboard.writeText(buildPrompt()).catch(() => {})}
         />

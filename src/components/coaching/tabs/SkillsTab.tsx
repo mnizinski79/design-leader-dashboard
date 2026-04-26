@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { DesignerItem, DesignerSkillItem, DreyfusStage } from "@/types"
 import { SKILL_LABELS, SKILL_GROUPS, ALL_SKILL_KEYS, tierLabel } from "@/components/coaching/lib/skills"
 import { DREYFUS_LABELS } from "@/components/coaching/lib/coaching-framework"
@@ -24,12 +24,18 @@ export function SkillsTab({ designer, onDreyfusChange, onSkillsSave }: Props) {
   const [skillValues, setSkillValues] = useState<Record<string, number>>(
     () => buildSkillMap(designer.skills)
   )
-  const [saving, setSaving] = useState(false)
   const [savingDreyfus, setSavingDreyfus] = useState(false)
   const [saved, setSaved] = useState(false)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  function handleDotClick(skillName: string, dot: number) {
-    setSkillValues((prev) => ({ ...prev, [skillName]: dot }))
+  async function handleDotClick(skillName: string, dot: number) {
+    const newValues = { ...skillValues, [skillName]: dot === skillValues[skillName] ? 0 : dot }
+    setSkillValues(newValues)
+    const skills = ALL_SKILL_KEYS.map((key) => ({ skillName: key, value: newValues[key] }))
+    await onSkillsSave(skills)
+    setSaved(true)
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => setSaved(false), 1500)
   }
 
   async function handleDreyfusChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -39,18 +45,6 @@ export function SkillsTab({ designer, onDreyfusChange, onSkillsSave }: Props) {
       await onDreyfusChange(stage)
     } finally {
       setSavingDreyfus(false)
-    }
-  }
-
-  async function handleSave() {
-    setSaving(true)
-    try {
-      const skills = ALL_SKILL_KEYS.map((key) => ({ skillName: key, value: skillValues[key] }))
-      await onSkillsSave(skills)
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -82,18 +76,18 @@ export function SkillsTab({ designer, onDreyfusChange, onSkillsSave }: Props) {
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             {groupName}
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-3.5">
             {keys.map((key) => {
               const value = skillValues[key]
               return (
                 <div key={key} className="flex items-center gap-3">
-                  <span className="text-sm w-44 shrink-0">{SKILL_LABELS[key]}</span>
+                  <span className="text-xs text-slate-600 w-44 shrink-0">{SKILL_LABELS[key]}</span>
                   <div className="flex gap-1">
                     {Array.from({ length: 9 }, (_, i) => i + 1).map((dot) => (
                       <button
                         key={dot}
                         type="button"
-                        onClick={() => handleDotClick(key, dot === value ? 0 : dot)}
+                        onClick={() => handleDotClick(key, dot)}
                         className={`w-5 h-5 rounded-full border transition-colors ${
                           dot <= value
                             ? "bg-blue-600 border-blue-600"
@@ -111,16 +105,9 @@ export function SkillsTab({ designer, onDreyfusChange, onSkillsSave }: Props) {
         </div>
       ))}
 
-      {/* Save button */}
-      <div>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving}
-          className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:opacity-50"
-        >
-          {saved ? "Saved!" : saving ? "Saving…" : "Save Skills"}
-        </button>
+      {/* Auto-save indicator */}
+      <div className="h-4">
+        {saved && <span className="text-xs text-slate-400">Saved</span>}
       </div>
     </div>
   )

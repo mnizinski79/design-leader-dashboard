@@ -118,7 +118,7 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
 
   return (
     <div
-      className={`fixed right-0 top-0 h-full w-80 bg-white shadow-xl border-l border-[#e5e5ea] z-50 flex flex-col transition-transform duration-200 ease-in-out ${
+      className={`fixed right-0 top-0 h-full w-[36rem] bg-white shadow-xl border-l border-[#e5e5ea] z-50 flex flex-col transition-transform duration-200 ease-in-out ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >
@@ -181,13 +181,28 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
 
         {error && (
           <div className="text-[12px] text-[#d70015] bg-[#fff5f5] border border-[#fecaca] rounded-lg px-3 py-2">
-            {error}
-            <button
-              onClick={handleRetry}
-              className="block text-[#0071e3] mt-1 hover:underline text-[11px]"
-            >
-              Retry
-            </button>
+            {error.includes("API key not set") ? (
+              <>
+                <p className="font-medium">Claude is not configured.</p>
+                <p className="mt-1 text-[#6e6e73]">
+                  Add your Anthropic API key to <code className="bg-slate-100 text-slate-700 px-1 rounded">.env.local</code>:
+                </p>
+                <code className="block mt-1.5 bg-slate-100 text-slate-700 px-2 py-1 rounded text-[11px] break-all">
+                  ANTHROPIC_API_KEY=sk-ant-...
+                </code>
+                <p className="mt-1.5 text-[#6e6e73]">Then restart the dev server.</p>
+              </>
+            ) : (
+              <>
+                {error}
+                <button
+                  onClick={handleRetry}
+                  className="block text-[#0071e3] mt-1 hover:underline text-[11px]"
+                >
+                  Retry
+                </button>
+              </>
+            )}
           </div>
         )}
         <div ref={messagesEndRef} />

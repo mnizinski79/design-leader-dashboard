@@ -26,7 +26,7 @@ describe("ProjectItem type", () => {
       sprintSnapshot: "8 tickets, 3 in review",
       stakeholders: "Sarah PM, Dev lead",
       attention: "Dev handoff docs incomplete",
-      blockers: null,
+      blockers: null, details: null,
       createdAt: "2026-04-24T00:00:00.000Z",
       decisions: [decision],
       designers: [designer],

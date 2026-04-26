@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { X } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
+import { X, Bold, List, Link2 } from "lucide-react"
 import { ProjectItem, ProjectPhase, ProjectStatus } from "@/types"
 
 export interface ProjectFormData {
@@ -14,6 +14,7 @@ export interface ProjectFormData {
   stakeholders: string
   attention: string
   blockers: string
+  details: string
   designerIds: string[]
 }
 
@@ -23,6 +24,7 @@ interface Props {
   onSave: (data: ProjectFormData) => void
   project?: ProjectItem
   allDesigners: { id: string; name: string }[]
+  saveError?: string | null
 }
 
 const PHASES: { value: ProjectPhase; label: string }[] = [
@@ -45,7 +47,7 @@ function emptyForm(): ProjectFormData {
   return {
     name: "", phase: "DISCOVERY", status: "ON_TRACK",
     description: "", dueDate: "", sprintSnapshot: "",
-    stakeholders: "", attention: "", blockers: "", designerIds: [],
+    stakeholders: "", attention: "", blockers: "", details: "", designerIds: [],
   }
 }
 
@@ -60,16 +62,33 @@ function projectToForm(p: ProjectItem): ProjectFormData {
     stakeholders: p.stakeholders ?? "",
     attention: p.attention ?? "",
     blockers: p.blockers ?? "",
+    details: p.details ?? "",
     designerIds: p.designers.map((d) => d.designerId),
   }
 }
 
-export function ProjectModal({ isOpen, onClose, onSave, project, allDesigners }: Props) {
+export function ProjectModal({ isOpen, onClose, onSave, project, allDesigners, saveError }: Props) {
   const [form, setForm] = useState<ProjectFormData>(emptyForm)
+  const [linkInputVisible, setLinkInputVisible] = useState(false)
+  const [linkUrl, setLinkUrl] = useState("")
+  const detailsRef = useRef<HTMLDivElement>(null)
+  const liveContentRef = useRef<string>("")
+  const savedRangeRef = useRef<Range | null>(null)
+  const linkInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (isOpen) {
-      setForm(project ? projectToForm(project) : emptyForm())
+      const data = project ? projectToForm(project) : emptyForm()
+      setForm(data)
+      setLinkInputVisible(false)
+      setLinkUrl("")
+      // Seed contentEditable after the modal renders
+      setTimeout(() => {
+        if (detailsRef.current) {
+          detailsRef.current.innerHTML = data.details || ""
+          liveContentRef.current = data.details || ""
+        }
+      }, 0)
     }
   }, [isOpen, project])
 
@@ -77,6 +96,43 @@ export function ProjectModal({ isOpen, onClose, onSave, project, allDesigners }:
 
   function set<K extends keyof ProjectFormData>(key: K, value: ProjectFormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function applyBold(e: React.MouseEvent) {
+    e.preventDefault()
+    detailsRef.current?.focus()
+    document.execCommand("bold", false)
+  }
+
+  function applyBullet(e: React.MouseEvent) {
+    e.preventDefault()
+    detailsRef.current?.focus()
+    document.execCommand("insertUnorderedList", false)
+  }
+
+  function showLinkInput(e: React.MouseEvent) {
+    e.preventDefault()
+    const sel = window.getSelection()
+    savedRangeRef.current = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).cloneRange() : null
+    setLinkUrl("")
+    setLinkInputVisible(true)
+    setTimeout(() => linkInputRef.current?.focus(), 0)
+  }
+
+  function applyLink(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (linkUrl.trim()) {
+      detailsRef.current?.focus()
+      if (savedRangeRef.current) {
+        const sel = window.getSelection()
+        sel?.removeAllRanges()
+        sel?.addRange(savedRangeRef.current)
+      }
+      document.execCommand("createLink", false, linkUrl.trim())
+      savedRangeRef.current = null
+    }
+    setLinkInputVisible(false)
+    setLinkUrl("")
   }
 
   function toggleDesigner(id: string) {
@@ -90,7 +146,9 @@ export function ProjectModal({ isOpen, onClose, onSave, project, allDesigners }:
 
   function handleSave() {
     if (!form.name.trim()) return
-    onSave(form)
+    const details = liveContentRef.current
+    const cleanedDetails = details === "<br>" ? "" : details
+    onSave({ ...form, details: cleanedDetails })
   }
 
   const inputClass = "w-full text-sm px-3 py-2 border border-[#d2d2d7] rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
@@ -237,10 +295,70 @@ export function ProjectModal({ isOpen, onClose, onSave, project, allDesigners }:
               className={inputClass + " resize-none"}
             />
           </div>
+
+          {/* Details */}
+          <div>
+            <label className={labelClass}>Project details</label>
+            <div className="border border-[#d2d2d7] rounded-lg overflow-hidden focus-within:ring-1 focus-within:ring-blue-400 focus-within:border-blue-400">
+              {/* Toolbar */}
+              <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-[#e5e5ea] bg-[#f9f9f9]">
+                <button
+                  type="button"
+                  onMouseDown={applyBold}
+                  className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                  title="Bold"
+                >
+                  <Bold size={13} />
+                </button>
+                <button
+                  type="button"
+                  onMouseDown={applyBullet}
+                  className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors"
+                  title="Bullet list"
+                >
+                  <List size={13} />
+                </button>
+                <button
+                  type="button"
+                  onMouseDown={showLinkInput}
+                  className={`p-1.5 rounded hover:bg-slate-200 transition-colors ${linkInputVisible ? "bg-slate-200 text-blue-600" : "text-slate-600"}`}
+                  title="Insert link"
+                >
+                  <Link2 size={13} />
+                </button>
+                {linkInputVisible && (
+                  <form onSubmit={applyLink} className="flex items-center gap-1 ml-1">
+                    <input
+                      ref={linkInputRef}
+                      type="url"
+                      placeholder="https://..."
+                      value={linkUrl}
+                      onChange={(e) => setLinkUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === "Escape" && setLinkInputVisible(false)}
+                      className="text-xs px-2 py-0.5 border border-slate-300 rounded w-40 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                    <button type="submit" className="text-xs text-blue-600 font-medium px-1.5 py-0.5 hover:bg-blue-50 rounded">Apply</button>
+                  </form>
+                )}
+              </div>
+              {/* Editable area */}
+              <div
+                ref={detailsRef}
+                contentEditable
+                suppressContentEditableWarning
+                onInput={(e) => { liveContentRef.current = e.currentTarget.innerHTML }}
+                data-placeholder="Add context, links, goals..."
+                className="min-h-[120px] text-sm px-3 py-2.5 focus:outline-none leading-relaxed text-[#1d1d1f] [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-1 [&_li]:my-0.5 [&_strong]:font-semibold [&_a]:text-blue-600 [&_a]:underline empty:before:content-[attr(data-placeholder)] empty:before:text-[#6e6e73]"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 mt-6">
+        {saveError && (
+          <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{saveError}</p>
+        )}
+        <div className="flex justify-end gap-2 mt-4">
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm text-[#6e6e73] border border-[#d2d2d7] rounded-lg hover:bg-slate-50 transition-colors"

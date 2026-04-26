@@ -10,7 +10,7 @@ const mockProjects: ProjectItem[] = [
     id: "p1", userId: "u1", name: "Hotel Redesign",
     phase: "DESIGN", status: "ON_TRACK",
     description: null, dueDate: null, sprintSnapshot: null,
-    stakeholders: null, attention: null, blockers: null,
+    stakeholders: null, attention: null, blockers: null, details: null,
     createdAt: "2026-04-24T00:00:00.000Z",
     decisions: [], designers: [],
   },

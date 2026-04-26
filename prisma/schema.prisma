@@ -154,6 +154,7 @@ model Project {
   stakeholders   String?
   attention      String?
   blockers       String?
+  details        String?
   createdAt      DateTime      @default(now()) @map("created_at")
 
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)

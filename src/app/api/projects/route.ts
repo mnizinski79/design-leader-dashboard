@@ -45,6 +45,7 @@ const PostSchema = z.object({
   stakeholders: z.string().nullable().optional(),
   attention: z.string().nullable().optional(),
   blockers: z.string().nullable().optional(),
+  details: z.string().nullable().optional(),
   designerIds: z.array(z.string()).optional(),
 })
 
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
       stakeholders: rest.stakeholders ?? null,
       attention: rest.attention ?? null,
       blockers: rest.blockers ?? null,
+      details: rest.details ?? null,
       designers: designerIds?.length
         ? { create: designerIds.map((id) => ({ designerId: id })) }
         : undefined,

@@ -155,7 +155,7 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
         <label htmlFor="note-body" className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">Notes</label>
         <textarea
           id="note-body"
-          className="flex-1 text-sm text-slate-800 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none font-mono leading-relaxed"
+          className="flex-1 text-sm text-slate-800 border border-slate-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none leading-relaxed"
           value={body}
           onChange={e => setBody(e.target.value)}
           onBlur={() => { if (body !== note.body) save({ body }) }}
@@ -164,10 +164,9 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
       </div>
 
       <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-        {saving && <span className="text-xs text-slate-400">Saving...</span>}
-        <div className="flex gap-2 ml-auto">
+        <div className="flex gap-2">
           <SplitButton
-            label="Ask Claude: Summary"
+            label="Summarize"
             onAsk={() =>
               openClaude(
                 `You are helping a design manager summarize a meeting or project note. Pull out what actually matters — key decisions, open questions, and insights worth remembering.\n\nTitle: ${title}\nProject: ${project}\nDate: ${date}\n\n${body}\n\nPlease summarize this note and extract the key insights and decisions.`,
@@ -181,7 +180,7 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
             }
           />
           <SplitButton
-            label="Ask Claude: Actions"
+            label="Generate Actions"
             onAsk={() =>
               openClaude(
                 `You are helping a design manager extract action items from a meeting or project note. Be concrete — specific tasks, owners if mentioned, and clear next steps only.\n\nTitle: ${title}\nProject: ${project}\n\n${body}\n\nPlease extract all action items, tasks, and next steps as a numbered list.`,
@@ -195,6 +194,7 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
             }
           />
         </div>
+        {saving && <span className="text-xs text-slate-400">Saving...</span>}
       </div>
     </div>
     <ClaudePanel

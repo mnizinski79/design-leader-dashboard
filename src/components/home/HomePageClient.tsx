@@ -7,6 +7,15 @@ import { Check, User, ChevronRight, ClipboardList, Pencil, Plus } from "lucide-r
 import type { TodoItem, ConversationItem, DailyFocusItem } from "@/types"
 import type { HomeDesigner, HomeProject } from "@/app/(dashboard)/home/page"
 
+const AVATAR_BG: Record<string, string> = {
+  "av-blue":   "#0071E3",
+  "av-purple": "#7C3AED",
+  "av-teal":   "#0D9488",
+  "av-pink":   "#DB2777",
+  "av-amber":  "#D97706",
+  "av-green":  "#1D7A1D",
+}
+
 interface Props {
   firstName: string
   todos: TodoItem[]
@@ -205,7 +214,7 @@ export function HomePageClient({
   const linkBtn = "text-[11px] font-medium text-[#0071E3] hover:underline"
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 max-w-5xl">
+    <div className="flex-1 overflow-y-auto max-w-5xl">
 
       {/* ── Page header ── */}
       <div className="flex items-start justify-between mb-5">
@@ -510,7 +519,8 @@ export function HomePageClient({
                   <div key={d.id} className="flex items-center gap-3 py-2.5 border-b border-[#f0f0f5] last:border-0">
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dotColor }} />
                     <div
-                      className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white bg-[#5E5CE6]"
+                      className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white"
+                      style={{ background: AVATAR_BG[d.avatarClass] ?? "#0071E3" }}
                     >
                       {getInitials(d.name)}
                     </div>
@@ -532,7 +542,7 @@ export function HomePageClient({
                       </p>
                     </div>
                     <Link
-                      href="/coaching"
+                      href={`/coaching?designer=${d.id}`}
                       className="inline-flex items-center gap-0.5 text-[11px] px-2.5 py-1 border border-[#d2d2d7] rounded-lg text-[#6e6e73] hover:bg-slate-50 flex-shrink-0"
                     >
                       1:1 <ChevronRight size={12} />

@@ -27,7 +27,7 @@ export default async function TodosPage() {
   }))
 
   return (
-    <div className="flex flex-col gap-6 h-[calc(100vh-4rem)]">
+    <div className="flex flex-col gap-6 h-[calc(100vh-4rem)] max-w-5xl">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">To-Do</h1>
         <p className="text-slate-500 mt-0.5 text-sm">Manage your tasks across workstreams</p>

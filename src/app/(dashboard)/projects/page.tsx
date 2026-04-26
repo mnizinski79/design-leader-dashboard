@@ -38,6 +38,7 @@ export default async function ProjectsPage() {
     stakeholders: p.stakeholders ?? null,
     attention: p.attention ?? null,
     blockers: p.blockers ?? null,
+    details: p.details ?? null,
     createdAt: p.createdAt.toISOString(),
     decisions: p.decisions.map((d) => ({
       id: d.id,

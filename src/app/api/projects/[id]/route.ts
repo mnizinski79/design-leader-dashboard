@@ -32,6 +32,7 @@ const PatchSchema = z.object({
   stakeholders: z.string().nullable().optional(),
   attention: z.string().nullable().optional(),
   blockers: z.string().nullable().optional(),
+  details: z.string().nullable().optional(),
   designerIds: z.array(z.string()).optional(),
 })
 

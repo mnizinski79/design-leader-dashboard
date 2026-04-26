@@ -94,15 +94,14 @@ Please generate 6 tailored 1:1 coaching questions for ${designer.name}. Question
 
   return (
     <div className="border-t px-4 py-3 shrink-0 bg-muted/20 flex items-center gap-3">
-      <span className="text-xs font-medium text-muted-foreground shrink-0">Coaching Brief</span>
       <div className="flex gap-2">
         <SplitButton
-          label="Ask Claude: Brief"
+          label="Generate Coaching Brief"
           onAsk={() => onOpenClaude(buildBriefPrompt(), `Coaching Brief — ${designer.name}`)}
           onCopy={() => navigator.clipboard.writeText(buildBriefPrompt()).catch(() => {})}
         />
         <SplitButton
-          label="Ask Claude: Questions"
+          label="Generate 1:1 Questions"
           onAsk={() => onOpenClaude(buildQuestionsPrompt(), `1:1 Questions — ${designer.name}`)}
           onCopy={() => navigator.clipboard.writeText(buildQuestionsPrompt()).catch(() => {})}
         />

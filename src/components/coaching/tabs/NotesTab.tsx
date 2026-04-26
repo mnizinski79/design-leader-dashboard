@@ -76,7 +76,7 @@ Please extract all action items, follow-ups, and to-dos from these notes. Format
         <h3 className="text-sm font-semibold">Manager Notes</h3>
         <div className="flex gap-2">
           <SplitButton
-            label="Ask Claude: To-Dos"
+            label="Generate Actions"
             onAsk={() => onOpenClaude(buildPrompt(), `Extract To-Dos — ${designer.name}`)}
             onCopy={() => navigator.clipboard.writeText(buildPrompt()).catch(() => {})}
           />

@@ -82,7 +82,7 @@ Please summarize the key patterns, themes, and growth areas across these recent 
         <h3 className="text-sm font-semibold">Sessions</h3>
         <div className="flex gap-2">
           <SplitButton
-            label="Ask Claude: Summary"
+            label="Summarize"
             onAsk={() => onOpenClaude(buildPrompt(), `Session Summary — ${designer.name}`)}
             onCopy={() => navigator.clipboard.writeText(buildPrompt()).catch(() => {})}
           />

@@ -10,6 +10,7 @@ export interface HomeDesigner {
   role: string
   nextOneOnOne: string | null
   openTopics: number
+  avatarClass: string
 }
 
 export interface HomeProject {
@@ -95,6 +96,7 @@ export default async function HomePage() {
     role: d.role,
     nextOneOnOne: d.nextOneOnOne ? d.nextOneOnOne.toISOString().split("T")[0] : null,
     openTopics: d.topics.filter((t) => !t.discussed).length,
+    avatarClass: d.avatarClass,
   }))
 
   const focusItem: DailyFocusItem | null = dailyFocus

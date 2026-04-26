@@ -220,7 +220,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full max-w-5xl">
       <div className="shrink-0 pb-4 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">1:1 &amp; Coaching</h1>
