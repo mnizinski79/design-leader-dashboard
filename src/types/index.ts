@@ -118,6 +118,18 @@ export interface DesignerNoteItem {
   updatedAt: string
 }
 
+export interface NinetyDayPlan {
+  quarter: string
+  startDate: string
+  endDate: string
+  quarterFocus: string
+  developmentPriorities: string
+  coachingApproach: string
+  keyMilestones: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface DesignerItem {
   id: string
   userId: string
@@ -128,6 +140,7 @@ export interface DesignerItem {
   avatarClass: string
   nextOneOnOne: string | null
   createdAt: string
+  ninetyDayPlan: NinetyDayPlan | null
   skills: DesignerSkillItem[]
   sessions: DesignerSessionItem[]
   goals: DesignerGoalItem[]
