@@ -1,6 +1,6 @@
 import { getDueBadge } from "@/lib/todo-utils"
 
-const TODAY = new Date("2024-06-15")
+const TODAY = "2024-06-15"
 
 describe("getDueBadge", () => {
   it("returns null for no due date", () => {

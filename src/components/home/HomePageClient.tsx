@@ -74,9 +74,12 @@ export function HomePageClient({
   conversations,
   designers,
   initialFocus,
-  todayStr,
+  todayStr: todayStrServer,
 }: Props) {
   const router = useRouter()
+  // Override server's UTC-based date with the client's local date after hydration
+  const [todayStr, setTodayStr] = useState(todayStrServer)
+  useEffect(() => { setTodayStr(new Date().toLocaleDateString("en-CA")) }, [])
   const [focus, setFocus] = useState<DailyFocusItem | null>(initialFocus)
   const [editingFocus, setEditingFocus] = useState(false)
   const [focusDraft, setFocusDraft] = useState("")
@@ -201,7 +204,7 @@ export function HomePageClient({
     if (!trimmed) return
     setSavingFocus(true)
     try {
-      const res = await fetch("/api/daily-focus", {
+      const res = await fetch(`/api/daily-focus?date=${todayStr}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: trimmed }),

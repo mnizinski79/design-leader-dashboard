@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
 import { HomePageClient } from "@/components/home/HomePageClient"
 import type { TodoItem, ConversationItem, DailyFocusItem } from "@/types"
 
@@ -29,9 +30,10 @@ export default async function HomePage() {
   const userId = session.user.id
   const firstName = session.user.name?.split(" ")[0] ?? "there"
 
-  const todayMidnight = new Date()
-  todayMidnight.setHours(0, 0, 0, 0)
-  const todayStr = todayMidnight.toISOString().split("T")[0]
+  const tz = decodeURIComponent((await cookies()).get("tz")?.value ?? "UTC")
+  const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: tz })
+  const [ty, tm, td] = todayStr.split("-").map(Number)
+  const todayMidnight = new Date(ty, tm - 1, td)
 
   const [todos, atRiskProjects, conversations, designers, dailyFocus] = await Promise.all([
     prisma.todo.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } }),

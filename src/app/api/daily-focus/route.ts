@@ -7,17 +7,25 @@ const upsertSchema = z.object({
   text: z.string().min(1).max(500),
 })
 
-function todayStart() {
+// Accept YYYY-MM-DD from client (local date) so the server doesn't need to guess timezone
+function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split("-").map(Number)
+  return new Date(y, m - 1, d)
+}
+
+function todayStart(dateParam?: string | null): Date {
+  if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) return parseLocalDate(dateParam)
   const d = new Date()
   return new Date(d.getFullYear(), d.getMonth(), d.getDate())
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
+  const { searchParams } = new URL(req.url)
   const focus = await prisma.dailyFocus.findFirst({
-    where: { userId: session.user.id, date: todayStart() },
+    where: { userId: session.user.id, date: todayStart(searchParams.get("date")) },
   })
 
   if (!focus) return NextResponse.json(null)
@@ -39,7 +47,8 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 422 })
   }
 
-  const today = todayStart()
+  const { searchParams } = new URL(req.url)
+  const today = todayStart(searchParams.get("date"))
   const focus = await prisma.dailyFocus.upsert({
     where: { userId_date: { userId: session.user.id, date: today } },
     create: { userId: session.user.id, date: today, text: parsed.data.text },

@@ -32,7 +32,7 @@ const FLAG_OPTIONS = Object.entries(FLAG_LABELS) as [SessionFlag, string][]
 export function SessionsTab({ designer, onSessionAdd, onSessionDelete, onOpenClaude }: Props) {
   const [sessions, setSessions] = useState<DesignerSessionItem[]>(designer.sessions)
   const [showForm, setShowForm] = useState(false)
-  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0])
+  const [date, setDate] = useState(() => new Date().toLocaleDateString("en-CA"))
   const [notes, setNotes] = useState("")
   const [flag, setFlag] = useState<SessionFlag>("COACHING")
   const [submitting, setSubmitting] = useState(false)

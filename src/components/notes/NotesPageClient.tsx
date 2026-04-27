@@ -24,7 +24,7 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
   const selectedNote = notes.find(n => n.id === selectedNoteId) ?? null
 
   async function handleNewNote() {
-    const today = new Date().toISOString().split("T")[0]
+    const today = new Date().toLocaleDateString("en-CA")
     const res = await fetch("/api/notes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

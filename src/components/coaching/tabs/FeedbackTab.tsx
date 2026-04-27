@@ -15,7 +15,7 @@ export function FeedbackTab({ designer, onFeedbackAdd, onFeedbackDelete }: Props
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [showForm, setShowForm] = useState(false)
   const [sourceName, setSourceName] = useState("")
-  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0])
+  const [date, setDate] = useState(() => new Date().toLocaleDateString("en-CA"))
   const [body, setBody] = useState("")
   const [submitting, setSubmitting] = useState(false)
 
