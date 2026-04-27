@@ -6,6 +6,7 @@ import { ClaudePanel } from "@/components/claude/ClaudePanel"
 import {
   DesignerItem, DesignerSessionItem, DesignerTopicItem, DesignerGoalItem,
   DesignerFeedbackItem, DesignerNoteItem, SessionFlag, DreyfusStage, GoalStatus,
+  NinetyDayPlan,
 } from "@/types"
 import { DesignerList } from "@/components/coaching/DesignerList"
 import { AddDesignerModal } from "@/components/coaching/AddDesignerModal"
@@ -32,6 +33,8 @@ export function CoachingPageClient({ initialDesigners }: Props) {
   const [claudeOpen, setClaudeOpen] = useState(false)
   const [claudePrompt, setClaudePrompt] = useState<string | null>(null)
   const [claudeLabel, setClaudeLabel] = useState("")
+  const [claudeSystemPrompt, setClaudeSystemPrompt] = useState<string | undefined>(undefined)
+  const [claudeSaveHandler, setClaudeSaveHandler] = useState<((text: string) => Promise<void>) | undefined>(undefined)
 
   const selected = designers.find((d) => d.id === selectedId) ?? null
 
@@ -39,9 +42,11 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     setDesigners((prev) => prev.map((d) => d.id === id ? { ...d, ...patch } : d))
   }
 
-  function handleOpenClaude(prompt: string, label: string) {
+  function handleOpenClaude(prompt: string, label: string, systemPrompt?: string, onSave?: (text: string) => Promise<void>) {
     setClaudePrompt(prompt)
     setClaudeLabel(label)
+    setClaudeSystemPrompt(systemPrompt)
+    setClaudeSaveHandler(onSave ? () => onSave : undefined)
     setClaudeOpen(true)
   }
 
@@ -166,6 +171,27 @@ export function CoachingPageClient({ initialDesigners }: Props) {
     router.refresh()
   }
 
+  async function handlePlanSave(plan: NinetyDayPlan) {
+    if (!selected) return
+    const res = await fetch(`/api/designers/${selected.id}/plan`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(plan),
+    })
+    if (res.ok) {
+      updateDesigner(selected.id, { ninetyDayPlan: plan })
+      setClaudeOpen(false)
+      router.refresh()
+    }
+  }
+
+  async function handlePlanDelete() {
+    if (!selected) return
+    await fetch(`/api/designers/${selected.id}/plan`, { method: "DELETE" })
+    updateDesigner(selected.id, { ninetyDayPlan: null })
+    router.refresh()
+  }
+
   async function handleFeedbackAdd(data: { sourceName: string; date: string; body: string }): Promise<DesignerFeedbackItem> {
     if (!selected) throw new Error("No designer selected")
     const res = await fetch(`/api/designers/${selected.id}/feedback`, {
@@ -270,6 +296,8 @@ export function CoachingPageClient({ initialDesigners }: Props) {
           onNoteUpdate={handleNoteUpdate}
           onNoteDelete={handleNoteDelete}
           onOpenClaude={handleOpenClaude}
+          onPlanSave={handlePlanSave}
+          onPlanDelete={handlePlanDelete}
         />
       )}
 
@@ -285,6 +313,8 @@ export function CoachingPageClient({ initialDesigners }: Props) {
         onClose={() => setClaudeOpen(false)}
         prompt={claudePrompt}
         contextLabel={claudeLabel}
+        systemPrompt={claudeSystemPrompt}
+        onSave={claudeSaveHandler}
       />
       </div>
     </div>
