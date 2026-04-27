@@ -3,6 +3,7 @@
 import {
   DesignerItem, DesignerSessionItem, DesignerTopicItem, DesignerGoalItem,
   DesignerFeedbackItem, DesignerNoteItem, SessionFlag, DreyfusStage, GoalStatus,
+  NinetyDayPlan,
 } from "@/types"
 import { SkillsTab } from "@/components/coaching/tabs/SkillsTab"
 import { SessionsTab } from "@/components/coaching/tabs/SessionsTab"
@@ -42,7 +43,9 @@ interface Props {
   onNoteAdd: (body: string) => Promise<DesignerNoteItem>
   onNoteUpdate: (noteId: string, body: string) => Promise<void>
   onNoteDelete: (noteId: string) => Promise<void>
-  onOpenClaude: (prompt: string, label: string) => void
+  onOpenClaude: (prompt: string, label: string, systemPrompt?: string, onSave?: (text: string) => Promise<void>) => void
+  onPlanSave: (plan: NinetyDayPlan) => Promise<void>
+  onPlanDelete: () => Promise<void>
 }
 
 export function CoachingPanel({
@@ -53,7 +56,7 @@ export function CoachingPanel({
   onGoalAdd, onGoalStatusChange, onGoalDelete,
   onFeedbackAdd, onFeedbackDelete,
   onNoteAdd, onNoteUpdate, onNoteDelete,
-  onOpenClaude,
+  onOpenClaude, onPlanSave, onPlanDelete,
 }: Props) {
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -117,6 +120,9 @@ export function CoachingPanel({
             onGoalAdd={onGoalAdd}
             onGoalStatusChange={onGoalStatusChange}
             onGoalDelete={onGoalDelete}
+            onOpenClaude={onOpenClaude}
+            onPlanSave={onPlanSave}
+            onPlanDelete={onPlanDelete}
           />
         )}
         {activeTab === "feedback" && (
