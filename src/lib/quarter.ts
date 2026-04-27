@@ -1,4 +1,4 @@
-interface QuarterInfo {
+export interface QuarterInfo {
   quarter: string
   startDate: string
   endDate: string
