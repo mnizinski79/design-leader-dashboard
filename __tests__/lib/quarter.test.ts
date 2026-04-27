@@ -2,7 +2,7 @@ import { getCurrentQuarter } from "@/lib/quarter"
 
 describe("getCurrentQuarter", () => {
   it("returns Q1 for January", () => {
-    const result = getCurrentQuarter(new Date("2026-01-15"))
+    const result = getCurrentQuarter(new Date(2026, 0, 15)) // Jan 15, local time
     expect(result).toEqual({
       quarter: "Q1 2026",
       startDate: "2026-01-01",
@@ -11,7 +11,7 @@ describe("getCurrentQuarter", () => {
   })
 
   it("returns Q2 for April", () => {
-    const result = getCurrentQuarter(new Date("2026-04-27"))
+    const result = getCurrentQuarter(new Date(2026, 3, 27)) // Apr 27, local time
     expect(result).toEqual({
       quarter: "Q2 2026",
       startDate: "2026-04-01",
@@ -20,7 +20,7 @@ describe("getCurrentQuarter", () => {
   })
 
   it("returns Q3 for July", () => {
-    const result = getCurrentQuarter(new Date("2026-07-01"))
+    const result = getCurrentQuarter(new Date(2026, 6, 1)) // Jul 1, local time
     expect(result).toEqual({
       quarter: "Q3 2026",
       startDate: "2026-07-01",
@@ -29,7 +29,7 @@ describe("getCurrentQuarter", () => {
   })
 
   it("returns Q4 for October", () => {
-    const result = getCurrentQuarter(new Date("2026-10-31"))
+    const result = getCurrentQuarter(new Date(2026, 9, 31)) // Oct 31, local time
     expect(result).toEqual({
       quarter: "Q4 2026",
       startDate: "2026-10-01",

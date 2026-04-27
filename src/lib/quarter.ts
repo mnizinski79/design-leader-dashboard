@@ -5,10 +5,8 @@ interface QuarterInfo {
 }
 
 export function getCurrentQuarter(date: Date = new Date()): QuarterInfo {
-  // Use UTC accessors so ISO date strings (e.g. "2026-07-01") are interpreted
-  // at face value regardless of the local timezone offset.
-  const year = date.getUTCFullYear()
-  const month = date.getUTCMonth() // 0-indexed
+  const year = date.getFullYear()
+  const month = date.getMonth() // 0-indexed, local timezone
 
   if (month < 3) {
     return { quarter: `Q1 ${year}`, startDate: `${year}-01-01`, endDate: `${year}-03-31` }
