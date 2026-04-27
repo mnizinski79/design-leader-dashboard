@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { CoachingPageClient } from "@/components/coaching/CoachingPageClient"
-import { DesignerItem } from "@/types"
+import { DesignerItem, NinetyDayPlan } from "@/types"
 
 export default async function CoachingPage() {
   const session = await auth()
@@ -27,6 +27,7 @@ export default async function CoachingPage() {
     dreyfusStage: d.dreyfusStage ?? null,
     nextOneOnOne: d.nextOneOnOne ? d.nextOneOnOne.toISOString().split("T")[0] : null,
     createdAt: d.createdAt.toISOString(),
+    ninetyDayPlan: (d.ninetyDayPlan as NinetyDayPlan | null) ?? null,
     skills: d.skills.map((s) => ({
       id: s.id,
       skillName: s.skillName,

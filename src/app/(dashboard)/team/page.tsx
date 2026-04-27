@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { TeamPageClient } from "@/components/team/TeamPageClient"
-import type { DesignerItem } from "@/types"
+import type { DesignerItem, NinetyDayPlan } from "@/types"
 
 export default async function TeamPage() {
   const session = await auth()
@@ -31,6 +31,7 @@ export default async function TeamPage() {
     avatarClass: d.avatarClass,
     nextOneOnOne: d.nextOneOnOne ? d.nextOneOnOne.toISOString().split("T")[0] : null,
     createdAt: d.createdAt.toISOString(),
+    ninetyDayPlan: (d.ninetyDayPlan as NinetyDayPlan | null) ?? null,
     skills: d.skills.map((s) => ({ id: s.id, skillName: s.skillName, value: s.value })),
     sessions: d.sessions.map((s) => ({
       id: s.id,
