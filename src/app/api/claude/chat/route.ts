@@ -24,6 +24,7 @@ export async function POST(req: Request) {
 
   const raw = body as Record<string, unknown>
   const messages = raw.messages
+  const customSystemPrompt = typeof raw.systemPrompt === "string" ? raw.systemPrompt : null
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return NextResponse.json({ error: "messages required" }, { status: 400 })
@@ -43,16 +44,18 @@ export async function POST(req: Request) {
 
   const typedMessages = messages as { role: "user" | "assistant"; content: string }[]
 
+  const defaultSystem =
+    "You are a coaching assistant for a design leader. Respond concisely and directly — this is a narrow side panel, not a document. " +
+    "Use bullet lists or numbered lists instead of tables. Avoid headers unless the response has 4+ distinct sections. " +
+    "Aim for responses that feel like a thoughtful colleague talking, not a consulting report. " +
+    "If asked a follow-up question, keep it even shorter."
+
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
   const stream = client.messages.stream({
     model: "claude-sonnet-4-6",
     max_tokens: 4096,
-    system:
-      "You are a coaching assistant for a design leader. Respond concisely and directly — this is a narrow side panel, not a document. " +
-      "Use bullet lists or numbered lists instead of tables. Avoid headers unless the response has 4+ distinct sections. " +
-      "Aim for responses that feel like a thoughtful colleague talking, not a consulting report. " +
-      "If asked a follow-up question, keep it even shorter.",
+    system: customSystemPrompt ?? defaultSystem,
     messages: typedMessages,
   })
 
