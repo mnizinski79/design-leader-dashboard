@@ -24,23 +24,27 @@ async function getAuthorizedDesigner(id: string, userId: string) {
 }
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-  const session = await auth()
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  try {
+    const session = await auth()
+    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const designer = await getAuthorizedDesigner(params.id, session.user.id)
-  if (!designer) return NextResponse.json({ error: "Not found" }, { status: 404 })
+    const designer = await getAuthorizedDesigner(params.id, session.user.id)
+    if (!designer) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-  const body = await req.json().catch(() => null)
-  const parsed = PlanSchema.safeParse(body)
-  if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+    const body = await req.json().catch(() => null)
+    const parsed = PlanSchema.safeParse(body)
+    if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
 
-  const updated = await prisma.designer.update({
-    where: { id: params.id },
-    data: { ninetyDayPlan: parsed.data },
-    select: { ninetyDayPlan: true },
-  })
+    await prisma.designer.update({
+      where: { id: params.id },
+      data: { ninetyDayPlan: parsed.data as object },
+    })
 
-  return NextResponse.json({ ninetyDayPlan: updated.ninetyDayPlan })
+    return NextResponse.json({ ok: true })
+  } catch (e) {
+    console.error("[PATCH /api/designers/[id]/plan]", e)
+    return NextResponse.json({ error: String(e) }, { status: 500 })
+  }
 }
 
 export async function DELETE(_req: Request, { params }: { params: { id: string } }) {

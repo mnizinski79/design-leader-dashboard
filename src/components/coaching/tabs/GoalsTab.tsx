@@ -5,6 +5,7 @@ import { X, ChevronDown, ChevronRight } from "lucide-react"
 import { DesignerItem, DesignerGoalItem, GoalStatus, NinetyDayPlan } from "@/types"
 import { NinetyDayPlanCard } from "@/components/coaching/plan/NinetyDayPlanCard"
 import { GoalSuggestionChips } from "@/components/coaching/plan/GoalSuggestionChips"
+import { SplitButton } from "@/components/claude/SplitButton"
 import { buildPlanSystemPrompt, buildPlanInitialPrompt, parsePlanSections } from "@/components/coaching/lib/plan-prompt"
 import { getCurrentQuarter } from "@/lib/quarter"
 
@@ -194,29 +195,16 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Goals</h3>
         <div className="flex items-center gap-2">
-          {/* Generate Plan SplitButton */}
-          <div className="flex rounded-md overflow-hidden border border-violet-300">
-            <button
-              type="button"
-              onClick={() => handleOpenPlanClaude(plan ?? undefined)}
-              className="text-xs px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white transition-colors flex items-center gap-1.5"
-            >
-              ✦ {plan ? "Revise Plan" : "Generate Plan"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                navigator.clipboard.writeText(
-                  buildPlanSystemPrompt(designer) + "\n\n" + buildPlanInitialPrompt(designer, getCurrentQuarter().quarter, getCurrentQuarter().endDate)
-                )
-              }}
-              className="text-xs px-2 py-1.5 bg-violet-600 hover:bg-violet-700 text-white border-l border-violet-500 transition-colors"
-              aria-label="Copy prompt"
-              title="Copy prompt to clipboard"
-            >
-              ▾
-            </button>
-          </div>
+          <SplitButton
+            label="Generate 90-day Plan"
+            onAsk={() => handleOpenPlanClaude(plan ?? undefined)}
+            onCopy={() => {
+              const { quarter, endDate } = getCurrentQuarter()
+              navigator.clipboard.writeText(
+                buildPlanSystemPrompt(designer) + "\n\n" + buildPlanInitialPrompt(designer, quarter, endDate)
+              ).catch(() => {})
+            }}
+          />
           <button
             type="button"
             onClick={() => setShowForm((v) => !v)}

@@ -178,11 +178,13 @@ export function CoachingPageClient({ initialDesigners }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(plan),
     })
-    if (res.ok) {
-      updateDesigner(selected.id, { ninetyDayPlan: plan })
-      setClaudeOpen(false)
-      router.refresh()
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error((data as { error?: string }).error ?? `Failed to save plan (${res.status})`)
     }
+    updateDesigner(selected.id, { ninetyDayPlan: plan })
+    setClaudeOpen(false)
+    router.refresh()
   }
 
   async function handlePlanDelete() {

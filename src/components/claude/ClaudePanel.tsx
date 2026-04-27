@@ -155,6 +155,7 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel, systemPromp
       }
 
       await onSave(fullText)
+      setSaving(false)
     } catch (e) {
       setError((e as Error).message || "Failed to save plan. Try again.")
       setSaving(false)
