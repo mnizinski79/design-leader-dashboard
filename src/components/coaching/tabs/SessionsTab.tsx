@@ -36,6 +36,7 @@ export function SessionsTab({ designer, onSessionAdd, onSessionDelete, onOpenCla
   const [notes, setNotes] = useState("")
   const [flag, setFlag] = useState<SessionFlag>("COACHING")
   const [submitting, setSubmitting] = useState(false)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
     if (!date || !notes.trim()) return
@@ -162,7 +163,15 @@ Please summarize the key patterns, themes, and growth areas across these recent 
       )}
       <div className="space-y-2">
         {sessions.map((s) => (
-          <div key={s.id} className="border rounded-lg px-4 py-3 flex items-start gap-3">
+          <div
+            key={s.id}
+            className="border rounded-lg px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-colors"
+            onClick={() => setExpanded(prev => {
+              const next = new Set(prev)
+              next.has(s.id) ? next.delete(s.id) : next.add(s.id)
+              return next
+            })}
+          >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs text-muted-foreground">{s.date}</span>
@@ -172,11 +181,11 @@ Please summarize the key patterns, themes, and growth areas across these recent 
                   </span>
                 )}
               </div>
-              <p className="text-sm line-clamp-2">{s.notes}</p>
+              <p className={`text-sm ${expanded.has(s.id) ? "" : "line-clamp-2"}`}>{s.notes}</p>
             </div>
             <button
               type="button"
-              onClick={() => handleDelete(s.id)}
+              onClick={(e) => { e.stopPropagation(); handleDelete(s.id) }}
               className="text-muted-foreground hover:text-red-600 transition-colors shrink-0"
               aria-label="Delete session"
             >
