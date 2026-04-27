@@ -150,3 +150,5 @@ describe("DELETE /api/projects/[id]", () => {
     expect(res.status).toBe(200)
   })
 })
+
+export {}

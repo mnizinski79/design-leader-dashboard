@@ -39,6 +39,7 @@ describe("ProjectCard", () => {
 
   it("renders attention callout when attention is set", () => {
     render(<ProjectCard project={baseProject} onEdit={onEdit} onDelete={onDelete} onDecisionAdd={onDecisionAdd} onDecisionDelete={onDecisionDelete} onDetailsChange={onDetailsChange} />)
+    fireEvent.click(screen.getByText("Hotel Redesign"))
     expect(screen.getByText("Dev handoff docs incomplete")).toBeInTheDocument()
   })
 
@@ -55,6 +56,7 @@ describe("ProjectCard", () => {
 
   it("calls onDecisionAdd when decision is logged", () => {
     render(<ProjectCard project={baseProject} onEdit={onEdit} onDelete={onDelete} onDecisionAdd={onDecisionAdd} onDecisionDelete={onDecisionDelete} onDetailsChange={onDetailsChange} />)
+    fireEvent.click(screen.getByText("Hotel Redesign"))
     const input = screen.getByPlaceholderText("Log a decision…")
     fireEvent.change(input, { target: { value: "New decision" } })
     fireEvent.click(screen.getByRole("button", { name: /log/i }))
@@ -63,11 +65,13 @@ describe("ProjectCard", () => {
 
   it("renders existing decision text", () => {
     render(<ProjectCard project={baseProject} onEdit={onEdit} onDelete={onDelete} onDecisionAdd={onDecisionAdd} onDecisionDelete={onDecisionDelete} onDetailsChange={onDetailsChange} />)
+    fireEvent.click(screen.getByText("Hotel Redesign"))
     expect(screen.getByText("Used shadcn")).toBeInTheDocument()
   })
 
   it("renders designer names", () => {
     render(<ProjectCard project={baseProject} onEdit={onEdit} onDelete={onDelete} onDecisionAdd={onDecisionAdd} onDecisionDelete={onDecisionDelete} onDetailsChange={onDetailsChange} />)
+    fireEvent.click(screen.getByText("Hotel Redesign"))
     expect(screen.getByText("Alice Chen")).toBeInTheDocument()
   })
 })

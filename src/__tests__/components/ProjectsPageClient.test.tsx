@@ -2,6 +2,12 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import { ProjectsPageClient } from "@/components/projects/ProjectsPageClient"
 import { ProjectItem } from "@/types"
 
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ push: jest.fn(), refresh: jest.fn(), replace: jest.fn() }),
+  useSearchParams: () => ({ get: jest.fn(() => null) }),
+  usePathname: () => "/projects",
+}))
+
 // Mock fetch
 global.fetch = jest.fn()
 

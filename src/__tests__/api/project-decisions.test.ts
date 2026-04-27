@@ -104,3 +104,5 @@ describe("DELETE /api/projects/[id]/decisions/[did]", () => {
     expect(res.status).toBe(200)
   })
 })
+
+export {}
