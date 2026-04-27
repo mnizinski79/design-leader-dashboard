@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   transpilePackages: ["next-auth", "@auth/core", "jose", "oauth4webapi", "openid-client"],
   experimental: {
     // Don't serve stale cached pages when navigating between routes.

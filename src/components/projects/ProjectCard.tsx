@@ -4,12 +4,6 @@ import { useState, useRef, useEffect } from "react"
 import { X, ChevronDown, ChevronRight, Bold, Link2, List } from "lucide-react"
 import { ProjectItem } from "@/types"
 
-const STATUS_BORDER: Record<string, string> = {
-  ON_TRACK: "border-l-[#1D7A1D]",
-  AT_RISK:  "border-l-[#B45309]",
-  BLOCKED:  "border-l-[#D70015]",
-  COMPLETE: "border-l-[#6E6E73]",
-}
 
 const STATUS_BADGE_BG: Record<string, string> = {
   ON_TRACK: "bg-[#E3F3E3] text-[#1D7A1D]",
