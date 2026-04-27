@@ -2,7 +2,16 @@
 
 import { useState } from "react"
 import { X, ChevronDown, ChevronRight } from "lucide-react"
-import { DesignerItem, DesignerGoalItem, GoalStatus } from "@/types"
+import { DesignerItem, DesignerGoalItem, GoalStatus, NinetyDayPlan } from "@/types"
+import { NinetyDayPlanCard } from "@/components/coaching/plan/NinetyDayPlanCard"
+import { GoalSuggestionChips } from "@/components/coaching/plan/GoalSuggestionChips"
+import { buildPlanSystemPrompt, buildPlanInitialPrompt, parsePlanSections } from "@/components/coaching/lib/plan-prompt"
+import { getCurrentQuarter } from "@/lib/quarter"
+
+interface SuggestedGoal {
+  title: string
+  timeline: string
+}
 
 interface Props {
   designer: DesignerItem
@@ -15,6 +24,9 @@ interface Props {
   }) => Promise<DesignerGoalItem>
   onGoalStatusChange: (goalId: string, status: GoalStatus) => Promise<void>
   onGoalDelete: (goalId: string) => Promise<void>
+  onOpenClaude: (prompt: string, label: string, systemPrompt?: string, onSave?: (text: string) => Promise<void>) => void
+  onPlanSave: (plan: NinetyDayPlan) => Promise<void>
+  onPlanDelete: () => Promise<void>
 }
 
 const STATUS_LABELS: Record<GoalStatus, string> = {
@@ -31,8 +43,22 @@ const STATUS_COLORS: Record<GoalStatus, string> = {
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS) as [GoalStatus, string][]
 
-export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete }: Props) {
+function parseGoalSuggestions(text: string): SuggestedGoal[] {
+  return text
+    .split("\n")
+    .filter((line) => line.startsWith("GOAL:"))
+    .map((line) => {
+      const content = line.replace("GOAL:", "").trim()
+      const [title, timeline] = content.split("|").map((s) => s.trim())
+      return { title: title ?? content, timeline: timeline ?? "" }
+    })
+    .filter((g) => g.title.length > 0)
+}
+
+export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete, onOpenClaude, onPlanSave, onPlanDelete }: Props) {
   const [goals, setGoals] = useState<DesignerGoalItem[]>(designer.goals)
+  const [plan, setPlan] = useState<NinetyDayPlan | null>(designer.ninetyDayPlan)
+  const [suggestedGoals, setSuggestedGoals] = useState<SuggestedGoal[]>([])
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [showForm, setShowForm] = useState(false)
   const [title, setTitle] = useState("")
@@ -63,11 +89,7 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
         timeline: timeline.trim(),
       })
       setGoals((prev) => [goal, ...prev])
-      setTitle("")
-      setDescription("")
-      setMeetsCriteria("")
-      setExceedsCriteria("")
-      setTimeline("")
+      setTitle(""); setDescription(""); setMeetsCriteria(""); setExceedsCriteria(""); setTimeline("")
       setShowForm(false)
     } finally {
       setSubmitting(false)
@@ -84,18 +106,145 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
     setGoals((prev) => prev.filter((g) => g.id !== goalId))
   }
 
+  function handleOpenPlanClaude(existingPlan?: NinetyDayPlan) {
+    const { quarter, startDate, endDate } = getCurrentQuarter()
+    const systemPrompt = buildPlanSystemPrompt(designer)
+    const userPrompt = existingPlan
+      ? `Here is the current 90-day plan:\n\nQUARTER FOCUS: ${existingPlan.quarterFocus}\nDEVELOPMENT PRIORITIES: ${existingPlan.developmentPriorities}\nCOACHING APPROACH: ${existingPlan.coachingApproach}\nKEY MILESTONES: ${existingPlan.keyMilestones}\n\nLet's revise this plan for ${quarter}.`
+      : buildPlanInitialPrompt(designer, quarter, endDate)
+
+    const label = existingPlan ? `90-Day Plan — Revision (${quarter})` : `90-Day Plan — ${quarter}`
+
+    onOpenClaude(userPrompt, label, systemPrompt, async (finalText: string) => {
+      const sections = parsePlanSections(finalText)
+      const now = new Date().toISOString()
+      const newPlan: NinetyDayPlan = {
+        quarter,
+        startDate,
+        endDate,
+        ...sections,
+        createdAt: existingPlan?.createdAt ?? now,
+        updatedAt: now,
+      }
+      await onPlanSave(newPlan)
+      setPlan(newPlan)
+
+      // Extract suggested goals (best-effort)
+      try {
+        const suggestionsText = await fetchGoalSuggestions(finalText)
+        const parsed = parseGoalSuggestions(suggestionsText)
+        if (parsed.length > 0) setSuggestedGoals(parsed)
+      } catch {
+        // silently ignore
+      }
+    })
+  }
+
+  async function fetchGoalSuggestions(planText: string): Promise<string> {
+    const res = await fetch("/api/claude/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          { role: "user", content: planText },
+          {
+            role: "user",
+            content: "List any specific goals you suggested during our conversation, one per line, formatted as: GOAL: [title] | [timeline]. Only list concrete goals with a title and timeline.",
+          },
+        ],
+      }),
+    })
+    if (!res.ok) return ""
+    const reader = res.body!.getReader()
+    const decoder = new TextDecoder()
+    let text = ""
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      text += decoder.decode(value, { stream: true })
+    }
+    reader.releaseLock()
+    return text
+  }
+
+  async function handleSectionEdit(
+    field: keyof Pick<NinetyDayPlan, "quarterFocus" | "developmentPriorities" | "coachingApproach" | "keyMilestones">,
+    value: string
+  ) {
+    if (!plan) return
+    const updated: NinetyDayPlan = { ...plan, [field]: value, updatedAt: new Date().toISOString() }
+    setPlan(updated)
+    await onPlanSave(updated)
+  }
+
+  async function handlePlanDelete() {
+    await onPlanDelete()
+    setPlan(null)
+    setSuggestedGoals([])
+  }
+
+  async function handleAddSuggestedGoal(data: { title: string; timeline: string }) {
+    const goal = await onGoalAdd({ title: data.title, timeline: data.timeline || "TBD" })
+    setGoals((prev) => [goal, ...prev])
+    return goal
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Goals</h3>
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-        >
-          + Add Goal
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Generate Plan SplitButton */}
+          <div className="flex rounded-md overflow-hidden border border-violet-300">
+            <button
+              type="button"
+              onClick={() => handleOpenPlanClaude(plan ?? undefined)}
+              className="text-xs px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white transition-colors flex items-center gap-1.5"
+            >
+              ✦ {plan ? "Revise Plan" : "Generate Plan"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  buildPlanSystemPrompt(designer) + "\n\n" + buildPlanInitialPrompt(designer, getCurrentQuarter().quarter, getCurrentQuarter().endDate)
+                )
+              }}
+              className="text-xs px-2 py-1.5 bg-violet-600 hover:bg-violet-700 text-white border-l border-violet-500 transition-colors"
+              aria-label="Copy prompt"
+              title="Copy prompt to clipboard"
+            >
+              ▾
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            className="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+          >
+            + Add Goal
+          </button>
+        </div>
       </div>
+
+      {/* Plan card */}
+      {plan && (
+        <NinetyDayPlanCard
+          plan={plan}
+          onSectionEdit={handleSectionEdit}
+          onRevise={() => handleOpenPlanClaude(plan)}
+          onDelete={handlePlanDelete}
+        />
+      )}
+
+      {/* Suggested goal chips */}
+      {suggestedGoals.length > 0 && (
+        <GoalSuggestionChips
+          goals={suggestedGoals}
+          onAdd={handleAddSuggestedGoal}
+          onDismissAll={() => setSuggestedGoals([])}
+        />
+      )}
 
       {/* Add goal form */}
       {showForm && (
@@ -115,9 +264,7 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1" htmlFor="goal-description">
-              Description
-            </label>
+            <label className="block text-xs font-medium mb-1" htmlFor="goal-description">Description</label>
             <textarea
               id="goal-description"
               value={description}
@@ -129,9 +276,7 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium mb-1" htmlFor="goal-meets">
-                Meets Criteria
-              </label>
+              <label className="block text-xs font-medium mb-1" htmlFor="goal-meets">Meets Criteria</label>
               <input
                 id="goal-meets"
                 type="text"
@@ -142,9 +287,7 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
               />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1" htmlFor="goal-exceeds">
-                Exceeds Criteria
-              </label>
+              <label className="block text-xs font-medium mb-1" htmlFor="goal-exceeds">Exceeds Criteria</label>
               <input
                 id="goal-exceeds"
                 type="text"
@@ -170,11 +313,7 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
             />
           </div>
           <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="text-sm px-3 py-1.5 border rounded-md hover:bg-muted"
-            >
+            <button type="button" onClick={() => setShowForm(false)} className="text-sm px-3 py-1.5 border rounded-md hover:bg-muted">
               Cancel
             </button>
             <button
@@ -189,7 +328,7 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
       )}
 
       {/* Goal list */}
-      {goals.length === 0 && !showForm && (
+      {goals.length === 0 && !showForm && !plan && (
         <p className="text-sm text-muted-foreground py-4 text-center">No goals yet.</p>
       )}
       <div className="space-y-2">
@@ -200,12 +339,7 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
             <div key={g.id} className="border rounded-lg overflow-hidden">
               <div className="flex items-center gap-3 px-4 py-3">
                 {hasDetails && (
-                  <button
-                    type="button"
-                    onClick={() => toggleExpand(g.id)}
-                    className="text-muted-foreground shrink-0 w-4"
-                    aria-label={isExpanded ? "Collapse goal" : "Expand goal"}
-                  >
+                  <button type="button" onClick={() => toggleExpand(g.id)} className="text-muted-foreground shrink-0 w-4" aria-label={isExpanded ? "Collapse" : "Expand"}>
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   </button>
                 )}
@@ -221,26 +355,15 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(g.id)}
-                  className="text-muted-foreground hover:text-red-600 transition-colors ml-1"
-                  aria-label="Delete goal"
-                >
+                <button type="button" onClick={() => handleDelete(g.id)} className="text-muted-foreground hover:text-red-600 transition-colors ml-1" aria-label="Delete goal">
                   <X size={14} />
                 </button>
               </div>
               {isExpanded && (
                 <div className="px-4 pb-3 pt-0 space-y-2 border-t bg-muted/20 text-sm">
-                  {g.description && (
-                    <p className="text-muted-foreground">{g.description}</p>
-                  )}
-                  {g.meetsCriteria && (
-                    <p><span className="font-medium text-xs">Meets:</span> {g.meetsCriteria}</p>
-                  )}
-                  {g.exceedsCriteria && (
-                    <p><span className="font-medium text-xs">Exceeds:</span> {g.exceedsCriteria}</p>
-                  )}
+                  {g.description && <p className="text-muted-foreground">{g.description}</p>}
+                  {g.meetsCriteria && <p><span className="font-medium text-xs">Meets:</span> {g.meetsCriteria}</p>}
+                  {g.exceedsCriteria && <p><span className="font-medium text-xs">Exceeds:</span> {g.exceedsCriteria}</p>}
                   <p className="text-xs text-muted-foreground">Timeline: {g.timeline}</p>
                 </div>
               )}
