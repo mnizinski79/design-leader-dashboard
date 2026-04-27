@@ -161,19 +161,11 @@ Please summarize the key patterns, themes, and growth areas across these recent 
       {sessions.length === 0 && !showForm && (
         <p className="text-sm text-muted-foreground py-4 text-center">No sessions yet. Add your first one.</p>
       )}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {sessions.map((s) => (
-          <div
-            key={s.id}
-            className="border rounded-lg px-4 py-3 flex items-start gap-3 cursor-pointer hover:bg-slate-50 transition-colors"
-            onClick={() => setExpanded(prev => {
-              const next = new Set(prev)
-              next.has(s.id) ? next.delete(s.id) : next.add(s.id)
-              return next
-            })}
-          >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+          <div key={s.id} className="border rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2 bg-muted/30 border-b">
+              <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">{s.date}</span>
                 {s.flag && (
                   <span className={`text-xs px-1.5 py-0.5 rounded ${FLAG_COLORS[s.flag]}`}>
@@ -181,15 +173,25 @@ Please summarize the key patterns, themes, and growth areas across these recent 
                   </span>
                 )}
               </div>
-              <p className={`text-sm ${expanded.has(s.id) ? "" : "line-clamp-2"}`}>{s.notes}</p>
+              <button
+                type="button"
+                onClick={() => handleDelete(s.id)}
+                className="text-muted-foreground hover:text-red-600 transition-colors"
+                aria-label="Delete session"
+              >
+                <X size={14} />
+              </button>
             </div>
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); handleDelete(s.id) }}
-              className="text-muted-foreground hover:text-red-600 transition-colors shrink-0"
-              aria-label="Delete session"
+              onClick={() => setExpanded(prev => {
+                const next = new Set(prev)
+                next.has(s.id) ? next.delete(s.id) : next.add(s.id)
+                return next
+              })}
+              className="w-full text-left px-4 py-3 text-sm hover:bg-muted/20 transition-colors"
             >
-              <X size={14} />
+              <p className={expanded.has(s.id) ? "whitespace-pre-wrap" : "line-clamp-2"}>{s.notes}</p>
             </button>
           </div>
         ))}

@@ -12,6 +12,7 @@ interface Props {
 
 export function FeedbackTab({ designer, onFeedbackAdd, onFeedbackDelete }: Props) {
   const [feedbackList, setFeedbackList] = useState<DesignerFeedbackItem[]>(designer.feedback)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [showForm, setShowForm] = useState(false)
   const [sourceName, setSourceName] = useState("")
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0])
@@ -122,8 +123,8 @@ export function FeedbackTab({ designer, onFeedbackAdd, onFeedbackDelete }: Props
       )}
       <div className="space-y-3">
         {feedbackList.map((f) => (
-          <div key={f.id} className="border rounded-lg px-4 py-3">
-            <div className="flex items-center justify-between mb-2">
+          <div key={f.id} className="border rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2 bg-muted/30 border-b">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">{f.sourceName}</span>
                 <span className="text-xs text-muted-foreground">{f.date}</span>
@@ -137,7 +138,17 @@ export function FeedbackTab({ designer, onFeedbackAdd, onFeedbackDelete }: Props
                 <X size={14} />
               </button>
             </div>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{f.body}</p>
+            <button
+              type="button"
+              onClick={() => setExpanded(prev => {
+                const next = new Set(prev)
+                next.has(f.id) ? next.delete(f.id) : next.add(f.id)
+                return next
+              })}
+              className="w-full text-left px-4 py-3 text-sm hover:bg-muted/20 transition-colors"
+            >
+              <p className={expanded.has(f.id) ? "whitespace-pre-wrap" : "line-clamp-2"}>{f.body}</p>
+            </button>
           </div>
         ))}
       </div>
