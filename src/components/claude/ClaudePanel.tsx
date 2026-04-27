@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, Send } from "lucide-react"
+import { X, Send, BookmarkCheck } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 
 interface Message {
@@ -14,27 +14,29 @@ interface Props {
   onClose: () => void
   prompt: string | null
   contextLabel: string
+  systemPrompt?: string
+  onSave?: (text: string) => Promise<void>
 }
 
-export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
+export function ClaudePanel({ isOpen, onClose, prompt, contextLabel, systemPrompt, onSave }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [streaming, setStreaming] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  // When a new prompt arrives, reset conversation and send it
   useEffect(() => {
     if (!prompt) return
     const initial: Message = { role: "user", content: prompt }
     setMessages([initial])
     setError(null)
     setInput("")
+    setSaving(false)
     sendToApi([initial])
-  // sendToApi is intentionally excluded: it is redefined each render and including
-  // it would cause an infinite loop. prompt is the only meaningful dependency.
-  }, [prompt]) // eslint-disable-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prompt])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -47,14 +49,13 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
     setStreaming(true)
     setError(null)
 
-    // Append empty placeholder for the incoming Claude message
     setMessages((prev) => [...prev, { role: "assistant", content: "" }])
 
     try {
       const res = await fetch("/api/claude/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: msgs }),
+        body: JSON.stringify({ messages: msgs, ...(systemPrompt && { systemPrompt }) }),
         signal: abort.signal,
       })
 
@@ -85,10 +86,10 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
       }
     } catch (e) {
       if ((e as Error).name === "AbortError") {
-        setMessages((prev) => prev.slice(0, -1)) // remove empty placeholder on abort
+        setMessages((prev) => prev.slice(0, -1))
         return
       }
-      setMessages((prev) => prev.slice(0, -1)) // remove empty placeholder on error
+      setMessages((prev) => prev.slice(0, -1))
       setError((e as Error).message || "Something went wrong. Try again.")
     } finally {
       setStreaming(false)
@@ -113,8 +114,55 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
     await sendToApi(newMessages)
   }
 
-  // messages[0] is the hidden initial prompt — skip it when rendering
+  async function handleSavePlan() {
+    if (!onSave || saving || streaming) return
+    setSaving(true)
+    setError(null)
+
+    const finalizationMsg: Message = {
+      role: "user",
+      content: "Finalize the plan now using the four labeled sections: QUARTER FOCUS, DEVELOPMENT PRIORITIES, COACHING APPROACH, KEY MILESTONES.",
+    }
+    const msgsWithFinalization = [...messages, finalizationMsg]
+
+    try {
+      const res = await fetch("/api/claude/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: msgsWithFinalization,
+          ...(systemPrompt && { systemPrompt }),
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error((data as { error?: string }).error ?? "Request failed")
+      }
+
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      let fullText = ""
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          fullText += decoder.decode(value, { stream: true })
+        }
+      } finally {
+        reader.releaseLock()
+      }
+
+      await onSave(fullText)
+    } catch (e) {
+      setError((e as Error).message || "Failed to save plan. Try again.")
+      setSaving(false)
+    }
+  }
+
   const visibleMessages = messages.slice(1)
+  const hasChatStarted = visibleMessages.some((m) => m.role === "assistant" && m.content.length > 0)
 
   return (
     <div
@@ -208,6 +256,20 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Save as Plan button — only shown for plan panel once chat has started */}
+      {onSave && hasChatStarted && (
+        <div className="px-3 pt-2 pb-0 shrink-0">
+          <button
+            onClick={handleSavePlan}
+            disabled={saving || streaming}
+            className="w-full flex items-center justify-center gap-2 text-[13px] font-medium bg-violet-600 hover:bg-violet-700 text-white rounded-xl py-2 transition-colors disabled:opacity-50"
+          >
+            <BookmarkCheck size={14} />
+            {saving ? "Saving plan…" : "Save as Plan"}
+          </button>
+        </div>
+      )}
+
       {/* Input */}
       <div className="px-3 py-3 border-t border-[#e5e5ea] shrink-0">
         <div className="flex gap-2 items-end">
@@ -220,14 +282,14 @@ export function ClaudePanel({ isOpen, onClose, prompt, contextLabel }: Props) {
                 handleSend()
               }
             }}
-            disabled={streaming}
-            placeholder={streaming ? "Claude is responding…" : "Reply to Claude…"}
+            disabled={streaming || saving}
+            placeholder={streaming ? "Claude is responding…" : saving ? "Saving plan…" : "Reply to Claude…"}
             rows={1}
             className="flex-1 text-[13px] border border-[#d2d2d7] rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none disabled:opacity-50 disabled:bg-slate-50"
           />
           <button
             onClick={handleSend}
-            disabled={streaming || !input.trim()}
+            disabled={streaming || saving || !input.trim()}
             aria-label="Send"
             className="bg-blue-600 text-white rounded-xl p-2 hover:bg-blue-700 transition-colors disabled:opacity-40 shrink-0"
           >
