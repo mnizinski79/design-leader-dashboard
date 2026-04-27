@@ -1,11 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Check, User, ChevronRight, ClipboardList, Pencil, Plus } from "lucide-react"
+import { Check, User, ChevronRight, ClipboardList, Pencil, Plus, X, Bell } from "lucide-react"
 import type { TodoItem, ConversationItem, DailyFocusItem } from "@/types"
 import type { HomeDesigner, HomeProject } from "@/app/(dashboard)/home/page"
+import { SplitButton } from "@/components/claude/SplitButton"
+
+interface AppNotification {
+  id: string
+  label: string
+  severity: "alert" | "warn" | "info"
+  href: string
+}
 
 const AVATAR_BG: Record<string, string> = {
   "av-blue":   "#0071E3",
@@ -74,6 +82,28 @@ export function HomePageClient({
   const [focusDraft, setFocusDraft] = useState("")
   const [savingFocus, setSavingFocus] = useState(false)
 
+  // ── Daily briefing state ──────────────────────────────────────────────────
+  const [briefingText, setBriefingText] = useState("")
+  const [briefingStreaming, setBriefingStreaming] = useState(false)
+  const [briefingError, setBriefingError] = useState<string | null>(null)
+  const [briefingVisible, setBriefingVisible] = useState(false)
+  const briefingAbortRef = useRef<AbortController | null>(null)
+
+  // ── Notifications panel state ─────────────────────────────────────────────
+  const [panelOpen, setPanelOpen] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!panelOpen) return
+    function handleClick(e: MouseEvent) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setPanelOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [panelOpen])
+
   // ── Conversation state ────────────────────────────────────────────────────
   const [convos, setConvos] = useState<ConversationItem[]>(conversations)
   const [expandedConvos, setExpandedConvos] = useState<Set<string>>(new Set())
@@ -102,13 +132,6 @@ export function HomePageClient({
 
   // ── Computed signals ──────────────────────────────────────────────────────
   const openTodos = todos.filter((t) => t.status !== "COMPLETE")
-  const urgentCount = openTodos.filter((t) => t.urgent).length
-  const overdueCount = openTodos.filter((t) => t.dueDate && t.dueDate < todayStr).length
-  const overdueOneOnOneCount = designers.filter(
-    (d) => d.nextOneOnOne && d.nextOneOnOne < todayStr
-  ).length
-  const pendingConvoCount = convos.length
-
   // Top 3 priorities: urgent first, then in-progress, then by sortOrder
   const top3 = [...openTodos]
     .sort((a, b) => {
@@ -121,14 +144,51 @@ export function HomePageClient({
   // Open tasks list (up to 6, by sortOrder)
   const openTasksList = [...openTodos].sort((a, b) => a.sortOrder - b.sortOrder).slice(0, 6)
 
-  // ── Briefing chips ────────────────────────────────────────────────────────
-  const chips: { label: string; cls: string }[] = []
-  if (urgentCount) chips.push({ label: `${urgentCount} urgent task${urgentCount > 1 ? "s" : ""}`, cls: "alert" })
-  if (overdueCount) chips.push({ label: `${overdueCount} overdue`, cls: "alert" })
-  if (projects.length) chips.push({ label: `${projects.length} project${projects.length > 1 ? "s" : ""} need${projects.length === 1 ? "s" : ""} attention`, cls: "warn" })
-  if (overdueOneOnOneCount) chips.push({ label: `${overdueOneOnOneCount} overdue 1:1${overdueOneOnOneCount > 1 ? "s" : ""}`, cls: "warn" })
-  if (pendingConvoCount) chips.push({ label: `${pendingConvoCount} conversation${pendingConvoCount > 1 ? "s" : ""} to have`, cls: "neutral" })
-  if (!chips.length) chips.push({ label: "All clear — great start", cls: "good" })
+  // ── Named notifications ───────────────────────────────────────────────────
+  const notifications: AppNotification[] = []
+
+  // Blocked projects (highest severity)
+  projects.filter(p => p.status === "BLOCKED").forEach(p => {
+    notifications.push({ id: `proj-blocked-${p.id}`, label: `${p.name} is blocked`, severity: "alert", href: "/projects" })
+  })
+  // Urgent incomplete tasks
+  openTodos.filter(t => t.urgent).forEach(t => {
+    notifications.push({ id: `todo-urgent-${t.id}`, label: `Urgent: ${t.title}`, severity: "alert", href: "/todos" })
+  })
+  // Overdue tasks (non-urgent)
+  openTodos.filter(t => t.dueDate && t.dueDate < todayStr && !t.urgent).forEach(t => {
+    notifications.push({ id: `todo-overdue-${t.id}`, label: `"${t.title}" is overdue`, severity: "alert", href: "/todos" })
+  })
+  // Overdue 1:1s
+  designers.filter(d => d.nextOneOnOne && d.nextOneOnOne < todayStr).forEach(d => {
+    const days = Math.floor((new Date(todayStr).getTime() - new Date(d.nextOneOnOne!).getTime()) / 86400000)
+    notifications.push({ id: `oneone-overdue-${d.id}`, label: `${d.name}'s 1:1 is ${days} day${days !== 1 ? "s" : ""} overdue`, severity: "alert", href: `/coaching?designer=${d.id}` })
+  })
+  // At-risk projects
+  projects.filter(p => p.status === "AT_RISK").forEach(p => {
+    notifications.push({ id: `proj-risk-${p.id}`, label: `${p.name} is at risk`, severity: "warn", href: "/projects" })
+  })
+  // Projects needing attention (on track but flagged)
+  projects.filter(p => p.status !== "BLOCKED" && p.status !== "AT_RISK" && (p.attention || p.blockers)).forEach(p => {
+    notifications.push({ id: `proj-attn-${p.id}`, label: `${p.name} needs attention`, severity: "warn", href: "/projects" })
+  })
+  // Upcoming 1:1s (within 2 days, not overdue)
+  designers.filter(d => {
+    if (!d.nextOneOnOne || d.nextOneOnOne < todayStr) return false
+    const daysUntil = Math.floor((new Date(d.nextOneOnOne).getTime() - new Date(todayStr).getTime()) / 86400000)
+    return daysUntil <= 2
+  }).forEach(d => {
+    const daysUntil = Math.floor((new Date(d.nextOneOnOne!).getTime() - new Date(todayStr).getTime()) / 86400000)
+    const when = daysUntil === 0 ? "today" : daysUntil === 1 ? "tomorrow" : "in 2 days"
+    notifications.push({ id: `oneone-upcoming-${d.id}`, label: `${d.name}'s 1:1 is ${when}`, severity: "warn", href: `/coaching?designer=${d.id}` })
+  })
+  // Pending conversations
+  if (convos.length > 0) {
+    notifications.push({ id: "convos", label: `${convos.length} conversation${convos.length > 1 ? "s" : ""} to have`, severity: "info", href: "/home" })
+  }
+
+  const visibleNotifications = notifications.slice(0, 3)
+  const overflowCount = notifications.length - 3
 
   // ── Daily focus handlers ──────────────────────────────────────────────────
   function openFocusEdit() {
@@ -191,13 +251,85 @@ export function HomePageClient({
     }
   }
 
-  // ── Chip style helper ─────────────────────────────────────────────────────
-  function chipStyle(cls: string) {
-    if (cls === "alert") return "bg-[#FFEAEA] text-[#D70015]"
-    if (cls === "warn") return "bg-[#FFF8E1] text-[#B45309]"
-    if (cls === "neutral") return "bg-[#E0F2FE] text-[#0071E3]"
-    if (cls === "good") return "bg-[#E3F3E3] text-[#1D7A1D]"
-    return ""
+  // ── Notification chip style ───────────────────────────────────────────────
+  function notifChipStyle(severity: AppNotification["severity"]) {
+    if (severity === "alert") return "bg-[#FFEAEA] text-[#D70015]"
+    if (severity === "warn") return "bg-[#FFF8E1] text-[#B45309]"
+    return "bg-[#E0F2FE] text-[#0071E3]"
+  }
+
+  // ── Daily briefing ────────────────────────────────────────────────────────
+  function buildBriefingPrompt(): string {
+    const focusText = focusIsToday && focus?.text ? focus.text : "not set"
+    const urgentTasks = openTodos.filter((t) => t.urgent).map((t) => t.title).join(", ") || "none"
+    const overdueTasks = openTodos.filter((t) => t.dueDate && t.dueDate < todayStr).map((t) => t.title).join(", ") || "none"
+    const atRiskProjectList = projects.map((p) => {
+      const label = p.status === "ON_TRACK" && (p.attention || p.blockers) ? "Needs attention" : STATUS_LABEL[p.status] ?? p.status
+      return `${p.name} (${label})`
+    }).join(", ") || "none"
+    const convosNeeded = convos.map((c) => c.topic + (c.person ? ` with ${c.person}` : "")).join(", ") || "none"
+    const teamSummary = designers.map((d) => {
+      if (d.nextOneOnOne && d.nextOneOnOne < todayStr) return `${d.name} (overdue 1:1)`
+      if (d.openTopics > 0) return `${d.name} (${d.openTopics} topic${d.openTopics > 1 ? "s" : ""} to discuss)`
+      return d.name
+    }).join(", ") || "no team"
+
+    return `You are a sharp chief of staff giving a design director their morning briefing. Be direct, specific, and actionable. Max 4 sentences. No fluff.
+
+Today's focus: ${focusText}
+Urgent tasks: ${urgentTasks}
+Overdue tasks: ${overdueTasks}
+Projects at risk: ${atRiskProjectList}
+Conversations needed: ${convosNeeded}
+Team: ${teamSummary}
+
+Give a crisp morning briefing that tells them where to direct their energy today.`
+  }
+
+  async function runBriefing() {
+    briefingAbortRef.current?.abort()
+    const abort = new AbortController()
+    briefingAbortRef.current = abort
+    setBriefingText("")
+    setBriefingError(null)
+    setBriefingVisible(true)
+    setBriefingStreaming(true)
+
+    try {
+      const res = await fetch("/api/claude/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: buildBriefingPrompt() }] }),
+        signal: abort.signal,
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error((data as { error?: string }).error ?? "Request failed")
+      }
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          setBriefingText((prev) => prev + decoder.decode(value, { stream: true }))
+        }
+      } finally {
+        reader.releaseLock()
+      }
+    } catch (e) {
+      if ((e as Error).name === "AbortError") return
+      setBriefingError((e as Error).message || "Something went wrong.")
+    } finally {
+      setBriefingStreaming(false)
+    }
+  }
+
+  function dismissBriefing() {
+    briefingAbortRef.current?.abort()
+    setBriefingVisible(false)
+    setBriefingText("")
+    setBriefingError(null)
   }
 
   // ── Todo status tag ───────────────────────────────────────────────────────
@@ -223,6 +355,13 @@ export function HomePageClient({
             {getGreeting(firstName)}
           </h1>
           <p className="text-sm text-[#6e6e73] mt-1">{today}</p>
+        </div>
+        <div className="flex items-center gap-2 mt-1">
+          <SplitButton
+            label="Daily Briefing"
+            onAsk={runBriefing}
+            onCopy={() => navigator.clipboard.writeText(buildBriefingPrompt()).catch(() => {})}
+          />
         </div>
       </div>
 
@@ -252,12 +391,58 @@ export function HomePageClient({
             )}
 
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex flex-wrap gap-1.5">
-                {chips.map((c, i) => (
-                  <span key={i} className={`text-[11px] font-semibold px-3 py-1 rounded-full ${chipStyle(c.cls)}`}>
-                    {c.label}
+              <div className="relative flex flex-wrap gap-1.5" ref={panelRef}>
+                {notifications.length === 0 ? (
+                  <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-[#E3F3E3] text-[#1D7A1D]">
+                    All clear — great start
                   </span>
-                ))}
+                ) : (
+                  <>
+                    {visibleNotifications.map(n => (
+                      <Link
+                        key={n.id}
+                        href={n.href}
+                        className={`text-[11px] font-semibold px-3 py-1 rounded-full transition-opacity hover:opacity-80 ${notifChipStyle(n.severity)}`}
+                      >
+                        {n.label}
+                      </Link>
+                    ))}
+                    {overflowCount > 0 && (
+                      <button
+                        onClick={() => setPanelOpen(v => !v)}
+                        className="text-[11px] font-semibold px-3 py-1 rounded-full bg-[#E0F2FE] text-[#0071E3] hover:opacity-80 transition-opacity flex items-center gap-1"
+                      >
+                        <Bell size={10} />
+                        +{overflowCount} more
+                      </button>
+                    )}
+                  </>
+                )}
+
+                {/* Notifications panel */}
+                {panelOpen && (
+                  <div className="absolute top-8 left-0 z-50 w-80 bg-white rounded-xl shadow-lg border border-[#e5e5ea] overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-[#f0f0f5]">
+                      <span className="text-[11px] font-bold text-[#6e6e73] uppercase tracking-[0.07em]">All notifications</span>
+                      <button onClick={() => setPanelOpen(false)} className="text-[#6e6e73] hover:text-[#1d1d1f]">
+                        <X size={13} />
+                      </button>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto">
+                      {notifications.map(n => (
+                        <Link
+                          key={n.id}
+                          href={n.href}
+                          onClick={() => setPanelOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 border-b border-[#f0f0f5] last:border-0 hover:bg-slate-50 transition-colors"
+                        >
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${n.severity === "alert" ? "bg-[#D70015]" : n.severity === "warn" ? "bg-[#B45309]" : "bg-[#0071E3]"}`} />
+                          <span className="text-[13px] text-[#1d1d1f]">{n.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <button
                 onClick={openFocusEdit}
@@ -298,6 +483,25 @@ export function HomePageClient({
           </div>
         )}
       </div>
+
+      {/* ── Daily briefing result ── */}
+      {briefingVisible && (
+        <div className="bg-white rounded-xl p-5 mb-4 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-bold text-[#1d1d1f]">Daily Briefing</span>
+            <button onClick={dismissBriefing} className="text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">
+              <X size={14} />
+            </button>
+          </div>
+          {briefingError ? (
+            <p className="text-[13px] text-[#D70015]">{briefingError}</p>
+          ) : briefingText ? (
+            <p className="text-[14px] text-[#1d1d1f] leading-relaxed whitespace-pre-wrap">{briefingText}</p>
+          ) : briefingStreaming ? (
+            <p className="text-[13px] text-[#6e6e73] italic">Generating your briefing…</p>
+          ) : null}
+        </div>
+      )}
 
       {/* ── Two-column grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

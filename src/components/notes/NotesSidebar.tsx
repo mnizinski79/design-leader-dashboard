@@ -32,7 +32,7 @@ export function NotesSidebar({ notes, allTags, selectedId, onSelect }: Props) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-3 border-b border-slate-100 space-y-2">
+      <div className="p-3 border-b border-slate-200 space-y-2">
         <input
           type="text"
           placeholder="Search notes..."
@@ -73,7 +73,7 @@ export function NotesSidebar({ notes, allTags, selectedId, onSelect }: Props) {
               key={note.id}
               onClick={() => onSelect(note.id)}
               className={cn(
-                "w-full text-left px-4 py-3 border-b border-slate-100 border-l-2 border-l-transparent hover:bg-slate-50 transition-colors",
+                "w-full text-left px-4 py-3 border-b border-slate-200 border-l-2 border-l-transparent hover:bg-slate-100 transition-colors",
                 selectedId === note.id && "bg-blue-50 border-l-blue-500"
               )}
             >

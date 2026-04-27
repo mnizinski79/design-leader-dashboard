@@ -16,9 +16,9 @@ export type ActiveTab = "skills" | "sessions" | "topics" | "goals" | "feedback" 
 
 const TABS: { id: ActiveTab; label: string }[] = [
   { id: "skills", label: "Skills" },
-  { id: "sessions", label: "Sessions" },
-  { id: "topics", label: "Topics" },
   { id: "goals", label: "Goals" },
+  { id: "topics", label: "1:1 Topics" },
+  { id: "sessions", label: "1:1 Sessions" },
   { id: "feedback", label: "Feedback" },
   { id: "notes", label: "Notes" },
 ]
@@ -59,20 +59,30 @@ export function CoachingPanel({
     <div className="flex-1 flex flex-col min-w-0">
       {/* Tab bar */}
       <div className="border-b px-4 flex gap-1 shrink-0">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => onTabChange(tab.id)}
-            className={`px-3 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === tab.id
-                ? "border-blue-600 text-blue-600"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {TABS.map((tab) => {
+          const undiscussed = tab.id === "topics"
+            ? designer.topics.filter((t) => !t.discussed).length
+            : 0
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onTabChange(tab.id)}
+              className={`px-3 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
+                activeTab === tab.id
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+              {undiscussed > 0 && (
+                <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#D70015] text-white text-[10px] font-bold leading-none">
+                  {undiscussed}
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       {/* Tab content */}

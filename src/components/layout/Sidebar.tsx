@@ -18,11 +18,11 @@ import {
 
 const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/home", label: "Home", icon: Home },
-  { href: "/todos", label: "To-Do", icon: ListTodo },
-  { href: "/notes", label: "Notes & Ideas", icon: NotebookPen },
-  { href: "/coaching", label: "1:1 & Coaching", icon: UserCheck },
   { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/todos", label: "To-Do", icon: ListTodo },
   { href: "/team", label: "My Team", icon: Users },
+  { href: "/coaching", label: "1:1 & Coaching", icon: UserCheck },
+  { href: "/notes", label: "Notes & Ideas", icon: NotebookPen },
 ]
 
 export function Sidebar() {

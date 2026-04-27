@@ -168,7 +168,7 @@ export function ProjectCard({ project, onEdit, onDelete, onDecisionAdd, onDecisi
   }
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border-l-4 ${STATUS_BORDER[project.status] ?? "border-l-slate-300"}`}>
+    <div className="bg-white rounded-xl shadow-sm">
       {/* Header — div not button to avoid nesting buttons inside */}
       <div className="p-5">
         <div

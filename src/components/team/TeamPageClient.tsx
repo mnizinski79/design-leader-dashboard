@@ -246,13 +246,13 @@ export function TeamPageClient({ initialDesigners }: Props) {
               <div className="flex items-center gap-2 justify-end">
                 <Link
                   href={`/coaching?designer=${d.id}`}
-                  className="text-[11px] px-2.5 py-1 border border-[#d2d2d7] rounded-lg text-[#6e6e73] hover:bg-slate-50 whitespace-nowrap"
+                  className="text-[11px] px-2.5 py-1 border border-[#f0f0f5] rounded-lg text-[#6e6e73] hover:bg-slate-50 whitespace-nowrap"
                 >
                   1:1 →
                 </Link>
                 <button
                   onClick={() => openEdit(d)}
-                  className="text-[11px] px-2.5 py-1 border border-[#d2d2d7] rounded-lg text-[#6e6e73] hover:bg-slate-50"
+                  className="text-[11px] px-2.5 py-1 border border-[#f0f0f5] rounded-lg text-[#6e6e73] hover:bg-slate-50"
                 >
                   Edit
                 </button>

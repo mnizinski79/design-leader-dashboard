@@ -39,7 +39,7 @@ export function DesignerList({ designers, selectedId, onSelect }: Props) {
               key={d.id}
               type="button"
               onClick={() => onSelect(d.id)}
-              className={`w-full text-left px-3 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors border-l-2 ${
+              className={`w-full text-left px-3 py-3 flex items-center gap-3 hover:bg-slate-100 transition-colors border-b border-slate-200 border-l-2 ${
                 isSelected ? "border-l-blue-600 bg-blue-50" : "border-l-transparent"
               }`}
             >
