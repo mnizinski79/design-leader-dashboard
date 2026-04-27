@@ -59,11 +59,6 @@ const KF_COMPETENCY_MAP: Record<string, { name: string; skilled: string; lessSki
     skilled: "Adapts approach and demeanor in real time to match the shifting demands of different situations.",
     lessSkilled: "Uses only one fidelity level regardless of the decision being made.",
   },
-  self_development: {
-    name: "Self-Development",
-    skilled: "Actively seeks feedback and development opportunities; takes ownership of growth.",
-    lessSkilled: "Avoids feedback; doesn't identify or act on development needs.",
-  },
 }
 
 function getLowestSkills(designer: DesignerItem, count = 3): string[] {
