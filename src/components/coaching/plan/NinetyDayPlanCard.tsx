@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MoreHorizontal, Sparkles } from "lucide-react"
+import { MoreHorizontal, Sparkles, ChevronDown, ChevronRight } from "lucide-react"
 import { NinetyDayPlan } from "@/types"
 
 interface Props {
@@ -22,6 +22,7 @@ const SECTIONS: {
 ]
 
 export function NinetyDayPlanCard({ plan, onSectionEdit, onRevise, onDelete }: Props) {
+  const [collapsed, setCollapsed] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [showMenu, setShowMenu] = useState(false)
@@ -41,13 +42,22 @@ export function NinetyDayPlanCard({ plan, onSectionEdit, onRevise, onDelete }: P
   return (
     <div className="border rounded-xl overflow-hidden mb-4 bg-white shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-violet-50 border-b border-violet-100">
-        <div className="flex items-center gap-2">
-          <Sparkles size={14} className="text-violet-600" />
+      <div className={`flex items-center justify-between px-4 py-3 bg-violet-50 ${collapsed ? "" : "border-b border-violet-100"}`}>
+        <button
+          type="button"
+          onClick={() => setCollapsed((v) => !v)}
+          className="flex items-center gap-2 text-left"
+        >
+          {collapsed ? (
+            <ChevronRight size={14} className="text-violet-400 shrink-0" />
+          ) : (
+            <ChevronDown size={14} className="text-violet-400 shrink-0" />
+          )}
+          <Sparkles size={14} className="text-violet-600 shrink-0" />
           <span className="text-sm font-semibold text-violet-900">
             {plan.quarter} · {formatDate(plan.startDate)} – {formatDate(plan.endDate)}
           </span>
-        </div>
+        </button>
         <div className="flex items-center gap-2">
           <button
             onClick={onRevise}
@@ -99,7 +109,7 @@ export function NinetyDayPlanCard({ plan, onSectionEdit, onRevise, onDelete }: P
       </div>
 
       {/* Sections */}
-      <div className="divide-y">
+      {!collapsed && <div className="divide-y">
         {SECTIONS.map(({ key, label }) => (
           <div key={key} className="px-4 py-3">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
@@ -124,7 +134,7 @@ export function NinetyDayPlanCard({ plan, onSectionEdit, onRevise, onDelete }: P
             )}
           </div>
         ))}
-      </div>
+      </div>}
     </div>
   )
 }
