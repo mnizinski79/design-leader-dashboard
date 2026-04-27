@@ -35,9 +35,9 @@ const KF_COMPETENCY_MAP: Record<string, { name: string; skilled: string; lessSki
     lessSkilled: "Gets overwhelmed by complex problems; struggles to identify what matters most.",
   },
   visual_design: {
-    name: "Situational Adaptability",
-    skilled: "Adapts approach and demeanor in real time to match the shifting demands of different situations.",
-    lessSkilled: "Applies the same approach regardless of context; struggles when situations change.",
+    name: "Demonstrates Self-Awareness",
+    skilled: "Uses a combination of feedback and self-reflection to gain productive insight into personal strengths and weaknesses.",
+    lessSkilled: "Doesn't seek feedback on craft; unaware of how their visual design choices land with others.",
   },
   ia: {
     name: "Business Insight",
@@ -50,9 +50,9 @@ const KF_COMPETENCY_MAP: Record<string, { name: string; skilled: string; lessSki
     lessSkilled: "Doesn't consistently prioritize user needs; solutions miss what customers actually want.",
   },
   facilitation: {
-    name: "Collaborates",
-    skilled: "Builds partnerships and works collaboratively with others to meet shared objectives.",
-    lessSkilled: "Doesn't actively facilitate alignment; group work lacks direction.",
+    name: "Builds Effective Teams",
+    skilled: "Forms teams with appropriate and diverse mix of styles; creates strong morale and team spirit.",
+    lessSkilled: "Doesn't actively build alignment or team cohesion; workshops and sessions lack structure or energy.",
   },
   prototyping: {
     name: "Situational Adaptability",
