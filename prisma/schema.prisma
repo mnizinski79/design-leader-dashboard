@@ -67,7 +67,7 @@ model Note {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   tags NoteTagAssignment[]
 
   @@map("notes")
@@ -211,15 +211,15 @@ enum DreyfusStage {
 }
 
 model Designer {
-  id           String        @id @default(uuid())
-  userId       String        @map("user_id")
-  name         String
-  role         String
-  roleLevel    String        @map("role_level")
-  dreyfusStage DreyfusStage? @map("dreyfus_stage")
-  avatarClass  String        @default("avatar-a") @map("avatar_class")
-  nextOneOnOne DateTime?     @map("next_one_on_one") @db.Date
-  sortOrder    Int           @default(0) @map("sort_order")
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  name          String
+  role          String
+  roleLevel     String        @map("role_level")
+  dreyfusStage  DreyfusStage? @map("dreyfus_stage")
+  avatarClass   String        @default("avatar-a") @map("avatar_class")
+  nextOneOnOne  DateTime?     @map("next_one_on_one") @db.Date
+  sortOrder     Int           @default(0) @map("sort_order")
   features      Json          @default("{}")
   ninetyDayPlan Json?         @map("ninety_day_plan")
   createdAt     DateTime      @default(now()) @map("created_at")
