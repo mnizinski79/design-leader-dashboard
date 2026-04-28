@@ -18,9 +18,7 @@ jest.mock("@/components/coaching/CoachingPanel", () => ({
 
 // Mock DesignerList
 jest.mock("@/components/coaching/DesignerList", () => ({
-  DesignerList: ({ onSelect }: { onSelect: (id: string) => void }) => (
-    <div data-testid="designer-list" />
-  ),
+  DesignerList: () => <div data-testid="designer-list" />,
 }))
 
 // Mock AddDesignerModal
@@ -53,6 +51,8 @@ const baseDesigner: DesignerItem = {
 }
 
 describe("CoachingPageClient", () => {
+  afterEach(() => { mockDesignerParam = null })
+
   it("renders empty state message when no designer is selected", () => {
     render(<CoachingPageClient initialDesigners={[baseDesigner]} />)
     expect(screen.getByText(/Select a designer/i)).toBeInTheDocument()
@@ -65,9 +65,10 @@ describe("CoachingPageClient", () => {
 
   it("renders CoachingPanel when a designer is pre-selected via URL param", () => {
     mockDesignerParam = "d1"
-    render(<CoachingPageClient initialDesigners={[baseDesigner]} />)
+    const { container } = render(<CoachingPageClient initialDesigners={[baseDesigner]} />)
     expect(screen.getByTestId("coaching-panel")).toBeInTheDocument()
-    mockDesignerParam = null
+    const card = container.querySelector(".bg-white.rounded-xl")
+    expect(card).not.toBeNull()
   })
 
   it("outer container includes bg-[#f5f5f7] class", () => {

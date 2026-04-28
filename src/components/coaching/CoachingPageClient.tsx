@@ -273,11 +273,11 @@ export function CoachingPageClient({ initialDesigners }: Props) {
       />
 
       {!selected ? (
-        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm bg-[#f5f5f7]">
+        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
           Select a designer or add one to get started
         </div>
       ) : (
-        <div className="flex-1 min-h-0 overflow-hidden bg-[#f5f5f7] p-3">
+        <div className="flex-1 min-h-0 overflow-hidden p-3">
           <div className="bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] overflow-hidden h-full flex flex-col">
             <CoachingPanel
               key={selected.id}
