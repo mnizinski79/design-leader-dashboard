@@ -9,6 +9,15 @@ interface Props {
   onSelect: (id: string) => void
 }
 
+const AVATAR_BG: Record<string, string> = {
+  "av-blue":   "#0071E3",
+  "av-purple": "#7C3AED",
+  "av-teal":   "#0D9488",
+  "av-pink":   "#DB2777",
+  "av-amber":  "#D97706",
+  "av-green":  "#1D7A1D",
+}
+
 const STAGE_COLORS: Record<DreyfusStage, string> = {
   NOVICE: "bg-slate-100 text-slate-600",
   ADVANCED_BEGINNER: "bg-blue-100 text-blue-700",
@@ -44,7 +53,8 @@ export function DesignerList({ designers, selectedId, onSelect }: Props) {
               }`}
             >
               <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${d.avatarClass}`}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 text-white"
+                style={{ background: AVATAR_BG[d.avatarClass] ?? "#0071E3" }}
               >
                 {initials}
               </div>
