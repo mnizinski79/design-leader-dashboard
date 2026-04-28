@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { TagSelector } from "./TagSelector"
+import { Pencil, Trash2 } from "lucide-react"
 import { ClaudePanel } from "@/components/claude/ClaudePanel"
 import { SplitButton } from "@/components/claude/SplitButton"
 import type { NoteItem, NoteTagItem } from "@/types"
@@ -25,6 +26,7 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
   const [claudeOpen, setClaudeOpen] = useState(false)
   const [claudePrompt, setClaudePrompt] = useState<string | null>(null)
   const [claudeLabel, setClaudeLabel] = useState("")
+  const titleInputRef = useRef<HTMLInputElement>(null)
 
   function openClaude(prompt: string, label: string) {
     setClaudePrompt(prompt)
@@ -99,6 +101,7 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
       <div className="flex items-start justify-between gap-4">
         <input
           id="note-title"
+          ref={titleInputRef}
           aria-label="Note title"
           className="flex-1 text-xl font-semibold text-slate-900 border-0 border-b border-transparent hover:border-slate-200 focus:border-blue-400 focus:outline-none py-1 bg-transparent"
           value={title}
@@ -106,12 +109,24 @@ export function NoteDetail({ note, allTags, onUpdate, onDelete, onTagsChange }: 
           onBlur={() => { if (title !== note.title) save({ title }) }}
           placeholder="Note title"
         />
-        <button
-          onClick={handleDelete}
-          className="text-xs text-slate-400 hover:text-red-500 transition-colors shrink-0"
-        >
-          Delete
-        </button>
+        <div className="flex gap-1.5 shrink-0">
+          <button
+            type="button"
+            aria-label="Edit note title"
+            onClick={() => titleInputRef.current?.focus()}
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#f5f5f7] hover:bg-[#ebebf0] transition-colors text-slate-400 hover:text-slate-600"
+          >
+            <Pencil size={14} />
+          </button>
+          <button
+            type="button"
+            aria-label="Delete note"
+            onClick={handleDelete}
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#f5f5f7] hover:bg-[#ebebf0] transition-colors text-slate-400 hover:text-red-500"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-4">
