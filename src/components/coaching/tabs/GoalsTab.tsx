@@ -147,10 +147,9 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: [
-          { role: "user", content: planText },
           {
             role: "user",
-            content: "List any specific goals you suggested during our conversation, one per line, formatted as: GOAL: [title] | [timeline]. Only list concrete goals with a title and timeline.",
+            content: `Based on this 90-day development plan for ${designer.name}, suggest 2-3 specific, measurable goals they should track. Each goal should directly reflect a priority or milestone in the plan.\n\n${planText}\n\nFormat each goal on its own line as: GOAL: [goal title] | [timeline, e.g. "Q2 2026" or "End of June"]. Output only the GOAL: lines, nothing else.`,
           },
         ],
       }),
