@@ -105,7 +105,7 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
         {activeTab === "notes" ? (
           <div className="flex h-full">
             {/* Sidebar */}
-            <div className="w-72 shrink-0 border-r border-slate-200 overflow-y-auto">
+            <div className="w-72 shrink-0 overflow-y-auto">
               <NotesSidebar
                 notes={notes}
                 allTags={allTags}
@@ -115,16 +115,18 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
             </div>
 
             {/* Detail panel */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-hidden bg-[#f5f5f7] p-3">
               {selectedNote ? (
-                <NoteDetail
-                  key={selectedNote.id}
-                  note={selectedNote}
-                  allTags={allTags}
-                  onUpdate={handleUpdateNote}
-                  onDelete={handleDeleteNote}
-                  onTagsChange={handleTagsChange}
-                />
+                <div className="bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] overflow-hidden h-full flex flex-col">
+                  <NoteDetail
+                    key={selectedNote.id}
+                    note={selectedNote}
+                    allTags={allTags}
+                    onUpdate={handleUpdateNote}
+                    onDelete={handleDeleteNote}
+                    onTagsChange={handleTagsChange}
+                  />
+                </div>
               ) : (
                 <div className="flex items-center justify-center h-full">
                   <p className="text-sm text-slate-400">Select a note or create a new one</p>
