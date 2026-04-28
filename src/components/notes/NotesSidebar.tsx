@@ -11,8 +11,8 @@ interface Props {
 
 export function NotesSidebar({ notes, selectedId, onSelect }: Props) {
   return (
-    <div className="flex flex-col h-full bg-[#f5f5f7]">
-      <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-2">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto py-3 space-y-2">
         {notes.length === 0 ? (
           <p className="text-xs text-slate-400 text-center py-8">No notes match your filters</p>
         ) : (

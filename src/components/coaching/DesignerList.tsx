@@ -29,8 +29,8 @@ const STAGE_COLORS: Record<DreyfusStage, string> = {
 
 export function DesignerList({ designers, selectedId, onSelect }: Props) {
   return (
-    <div className="w-64 shrink-0 flex flex-col h-full bg-[#f5f5f7]">
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+    <div className="w-64 shrink-0 flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto py-3 space-y-2">
         {designers.length === 0 && (
           <p className="text-sm text-muted-foreground p-4 text-center">No designers yet</p>
         )}
