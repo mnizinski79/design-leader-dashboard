@@ -30,14 +30,14 @@ const STAGE_COLORS: Record<DreyfusStage, string> = {
 export function DesignerList({ designers, selectedId, onSelect }: Props) {
   return (
     <div className="w-64 shrink-0 flex flex-col h-full bg-[#f5f5f7]">
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {designers.length === 0 && (
           <p className="text-sm text-muted-foreground p-4 text-center">No designers yet</p>
         )}
         {designers.map((d) => {
           const isSelected = d.id === selectedId
           const initials = d.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
-          const pendingTopics = (d.topics ?? []).filter(t => !t.discussed).length
+          const pendingTopics = d.topics.filter(t => !t.discussed).length
 
           return (
             <button
@@ -45,7 +45,7 @@ export function DesignerList({ designers, selectedId, onSelect }: Props) {
               type="button"
               onClick={() => onSelect(d.id)}
               className={cn(
-                "w-full text-left p-3 mb-2 bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] border border-transparent flex items-center gap-3 hover:bg-[#fafafa] hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)] transition-all",
+                "w-full text-left p-3 bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] border border-transparent flex items-center gap-3 hover:bg-[#fafafa] hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)] transition-all",
                 isSelected && "bg-[#EFF6FF] border-[#93C5FD]"
               )}
             >
@@ -59,7 +59,7 @@ export function DesignerList({ designers, selectedId, onSelect }: Props) {
                 <p className="text-sm font-medium truncate">{d.name}</p>
                 <p className="text-xs text-muted-foreground truncate">{d.role}</p>
                 {d.dreyfusStage && (
-                  <span className={`inline-block text-xs px-1.5 py-0.5 rounded mt-0.5 ${STAGE_COLORS[d.dreyfusStage]}`}>
+                  <span className={cn("inline-block text-xs px-1.5 py-0.5 rounded mt-0.5", STAGE_COLORS[d.dreyfusStage])}>
                     {DREYFUS_LABELS[d.dreyfusStage]}
                   </span>
                 )}
@@ -67,7 +67,9 @@ export function DesignerList({ designers, selectedId, onSelect }: Props) {
               {(d.nextOneOnOne || pendingTopics > 0) && (
                 <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
                   {d.nextOneOnOne && (
-                    <span className="text-[10px] text-slate-400">{d.nextOneOnOne}</span>
+                    <span className="text-[10px] text-slate-400">
+                      {new Date(d.nextOneOnOne + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </span>
                   )}
                   {pendingTopics > 0 && (
                     <span className="text-[10px] text-amber-600 font-medium">

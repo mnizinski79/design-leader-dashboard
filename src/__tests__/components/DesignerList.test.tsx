@@ -39,7 +39,7 @@ describe("DesignerList", () => {
 
   it("shows next 1:1 date", () => {
     render(<DesignerList designers={[baseDesigner]} selectedId={null} onSelect={jest.fn()} />)
-    expect(screen.getByText("2026-04-29")).toBeInTheDocument()
+    expect(screen.getByText("Apr 29")).toBeInTheDocument()
   })
 
   it("shows pending topic count for undiscussed topics only", () => {
