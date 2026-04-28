@@ -160,9 +160,9 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
             </div>
 
             {/* Detail panel */}
-            <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-hidden p-3">
               {selectedNote ? (
-                <div className="bg-white overflow-hidden h-full flex flex-col border-l border-slate-100">
+                <div className="bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] overflow-hidden h-full flex flex-col">
                   <NoteDetail
                     key={selectedNote.id}
                     note={selectedNote}
