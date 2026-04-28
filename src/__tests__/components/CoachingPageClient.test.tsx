@@ -67,13 +67,14 @@ describe("CoachingPageClient", () => {
     mockDesignerParam = "d1"
     const { container } = render(<CoachingPageClient initialDesigners={[baseDesigner]} />)
     expect(screen.getByTestId("coaching-panel")).toBeInTheDocument()
-    const card = container.querySelector(".bg-white.rounded-xl")
+    const card = container.querySelector(".bg-white.border-l")
     expect(card).not.toBeNull()
   })
 
-  it("outer container includes bg-[#f5f5f7] class", () => {
+  it("detail panel has border-l separator instead of gray wrapper", () => {
+    mockDesignerParam = "d1"
     const { container } = render(<CoachingPageClient initialDesigners={[baseDesigner]} />)
-    const grayBg = container.querySelector(".bg-\\[\\#f5f5f7\\]")
-    expect(grayBg).toBeInTheDocument()
+    const panel = container.querySelector(".border-l.border-slate-100")
+    expect(panel).not.toBeNull()
   })
 })

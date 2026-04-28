@@ -262,7 +262,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
           + Add Designer
         </button>
       </div>
-      <div className="flex flex-1 overflow-hidden bg-[#f5f5f7]">
+      <div className="flex flex-1 overflow-hidden">
       <DesignerList
         designers={designers}
         selectedId={selectedId}
@@ -277,8 +277,8 @@ export function CoachingPageClient({ initialDesigners }: Props) {
           Select a designer or add one to get started
         </div>
       ) : (
-        <div className="flex-1 min-h-0 overflow-hidden p-3">
-          <div className="bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] overflow-hidden h-full flex flex-col">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="bg-white overflow-hidden h-full flex flex-col border-l border-slate-100">
             <CoachingPanel
               key={selected.id}
               designer={selected}

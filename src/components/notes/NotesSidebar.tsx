@@ -1,74 +1,22 @@
 "use client"
 
-import { useState, useMemo } from "react"
 import { cn } from "@/lib/utils"
-import type { NoteItem, NoteTagItem } from "@/types"
+import type { NoteItem } from "@/types"
 
 interface Props {
   notes: NoteItem[]
-  allTags: NoteTagItem[]
   selectedId: string | null
   onSelect: (id: string) => void
 }
 
-export function NotesSidebar({ notes, allTags, selectedId, onSelect }: Props) {
-  const [search, setSearch] = useState("")
-  const [project, setProject] = useState("")
-  const [tagFilter, setTagFilter] = useState("")
-
-  const projects = useMemo(() => {
-    const set = new Set(notes.map(n => n.project))
-    return Array.from(set).sort()
-  }, [notes])
-
-  const filtered = useMemo(() => {
-    return notes.filter(n => {
-      if (search && !n.title.toLowerCase().includes(search.toLowerCase())) return false
-      if (project && n.project !== project) return false
-      if (tagFilter && !n.tags.some(t => t.id === tagFilter)) return false
-      return true
-    })
-  }, [notes, search, project, tagFilter])
-
+export function NotesSidebar({ notes, selectedId, onSelect }: Props) {
   return (
     <div className="flex flex-col h-full bg-[#f5f5f7]">
-      <div className="p-3 space-y-2">
-        <input
-          type="text"
-          placeholder="Search notes..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
-        />
-        <div className="flex gap-2 overflow-hidden">
-          <select
-            value={project}
-            onChange={e => setProject(e.target.value)}
-            className="flex-1 min-w-0 text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
-          >
-            <option value="">All projects</option>
-            {projects.map(p => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
-          <select
-            value={tagFilter}
-            onChange={e => setTagFilter(e.target.value)}
-            className="flex-1 min-w-0 text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
-          >
-            <option value="">All tags</option>
-            {allTags.map(t => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2">
-        {filtered.length === 0 ? (
+      <div className="flex-1 overflow-y-auto px-3 pt-3 pb-3 space-y-2">
+        {notes.length === 0 ? (
           <p className="text-xs text-slate-400 text-center py-8">No notes match your filters</p>
         ) : (
-          filtered.map(note => (
+          notes.map(note => (
             <button
               key={note.id}
               type="button"

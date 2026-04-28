@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { NotesSidebar } from "./NotesSidebar"
 import { NoteDetail } from "./NoteDetail"
@@ -20,8 +20,25 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"notes" | "ideas">("notes")
   const [showIdeaModal, setShowIdeaModal] = useState(false)
+  const [search, setSearch] = useState("")
+  const [project, setProject] = useState("")
+  const [tagFilter, setTagFilter] = useState("")
 
   const selectedNote = notes.find(n => n.id === selectedNoteId) ?? null
+
+  const projects = useMemo(() => {
+    const set = new Set(notes.map(n => n.project).filter(Boolean))
+    return Array.from(set).sort()
+  }, [notes])
+
+  const filteredNotes = useMemo(() => {
+    return notes.filter(n => {
+      if (search && !n.title.toLowerCase().includes(search.toLowerCase())) return false
+      if (project && n.project !== project) return false
+      if (tagFilter && !n.tags.some(t => t.id === tagFilter)) return false
+      return true
+    })
+  }, [notes, search, project, tagFilter])
 
   async function handleNewNote() {
     const today = new Date().toLocaleDateString("en-CA")
@@ -100,6 +117,35 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
         </div>
       </div>
 
+      {/* Filter row — only shown for Notes tab */}
+      {activeTab === "notes" && (
+        <div className="flex items-center gap-2 py-3 border-b border-slate-200 shrink-0">
+          <select
+            value={project}
+            onChange={e => setProject(e.target.value)}
+            className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
+          >
+            <option value="">All projects</option>
+            {projects.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          <select
+            value={tagFilter}
+            onChange={e => setTagFilter(e.target.value)}
+            className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"
+          >
+            <option value="">All tags</option>
+            {allTags.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
+          <input
+            type="text"
+            placeholder="Search notes..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="ml-auto text-sm border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white w-56"
+          />
+        </div>
+      )}
+
       {/* Tab content */}
       <div className="flex-1 overflow-hidden">
         {activeTab === "notes" ? (
@@ -107,17 +153,16 @@ export function NotesPageClient({ initialNotes, initialTags, initialIdeas }: Pro
             {/* Sidebar */}
             <div className="w-72 shrink-0 overflow-y-auto">
               <NotesSidebar
-                notes={notes}
-                allTags={allTags}
+                notes={filteredNotes}
                 selectedId={selectedNoteId}
                 onSelect={handleSelectNote}
               />
             </div>
 
             {/* Detail panel */}
-            <div className="flex-1 min-h-0 overflow-hidden bg-[#f5f5f7] p-3">
+            <div className="flex-1 min-h-0 overflow-hidden">
               {selectedNote ? (
-                <div className="bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] overflow-hidden h-full flex flex-col">
+                <div className="bg-white overflow-hidden h-full flex flex-col border-l border-slate-100">
                   <NoteDetail
                     key={selectedNote.id}
                     note={selectedNote}
