@@ -64,7 +64,7 @@ export function NotesSidebar({ notes, allTags, selectedId, onSelect }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 pb-3">
+      <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-2">
         {filtered.length === 0 ? (
           <p className="text-xs text-slate-400 text-center py-8">No notes match your filters</p>
         ) : (
@@ -74,7 +74,7 @@ export function NotesSidebar({ notes, allTags, selectedId, onSelect }: Props) {
               type="button"
               onClick={() => onSelect(note.id)}
               className={cn(
-                "w-full text-left p-3 mb-2 bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] border border-transparent hover:bg-[#fafafa] hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)] transition-all",
+                "w-full text-left p-3 bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] border border-transparent hover:bg-[#fafafa] hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)] transition-all",
                 selectedId === note.id && "bg-[#EFF6FF] border-[#93C5FD]"
               )}
             >

@@ -3,8 +3,8 @@ import { NotesSidebar } from "@/components/notes/NotesSidebar"
 import type { NoteItem, NoteTagItem } from "@/types"
 
 const baseNotes: NoteItem[] = [
-  { id: "n1", title: "Army Hotel Updates", project: "General", date: "2026-04-23", body: "", tags: [] },
-  { id: "n2", title: "Agentic Voice", project: "Design System", date: "2026-04-21", body: "", tags: [{ id: "t1", name: "dls" }] },
+  { id: "n1", userId: "u1", title: "Army Hotel Updates", project: "General", date: "2026-04-23", body: "", summary: null, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z", tags: [] },
+  { id: "n2", userId: "u1", title: "Agentic Voice", project: "Design System", date: "2026-04-21", body: "", summary: null, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z", tags: [{ id: "t1", name: "dls" }] },
 ]
 const allTags: NoteTagItem[] = [{ id: "t1", name: "dls" }]
 

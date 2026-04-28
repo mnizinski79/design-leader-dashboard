@@ -11,10 +11,14 @@ jest.mock("@/components/claude/SplitButton", () => ({
 
 const mockNote: NoteItem = {
   id: "n1",
+  userId: "u1",
   title: "Test Note",
   project: "Design System",
   date: "2026-04-28",
   body: "Some content here",
+  summary: null,
+  createdAt: "2026-01-01T00:00:00.000Z",
+  updatedAt: "2026-01-01T00:00:00.000Z",
   tags: [],
 }
 
