@@ -277,30 +277,34 @@ export function CoachingPageClient({ initialDesigners }: Props) {
           Select a designer or add one to get started
         </div>
       ) : (
-        <CoachingPanel
-          key={selected.id}
-          designer={selected}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          onDreyfusChange={handleDreyfusChange}
-          onSkillsSave={handleSkillsSave}
-          onSessionAdd={handleSessionAdd}
-          onSessionDelete={handleSessionDelete}
-          onTopicAdd={handleTopicAdd}
-          onTopicToggle={handleTopicToggle}
-          onTopicDelete={handleTopicDelete}
-          onGoalAdd={handleGoalAdd}
-          onGoalStatusChange={handleGoalStatusChange}
-          onGoalDelete={handleGoalDelete}
-          onFeedbackAdd={handleFeedbackAdd}
-          onFeedbackDelete={handleFeedbackDelete}
-          onNoteAdd={handleNoteAdd}
-          onNoteUpdate={handleNoteUpdate}
-          onNoteDelete={handleNoteDelete}
-          onOpenClaude={handleOpenClaude}
-          onPlanSave={handlePlanSave}
-          onPlanDelete={handlePlanDelete}
-        />
+        <div className="flex-1 min-h-0 overflow-hidden p-3">
+          <div className="bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] overflow-hidden h-full flex flex-col">
+            <CoachingPanel
+              key={selected.id}
+              designer={selected}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onDreyfusChange={handleDreyfusChange}
+              onSkillsSave={handleSkillsSave}
+              onSessionAdd={handleSessionAdd}
+              onSessionDelete={handleSessionDelete}
+              onTopicAdd={handleTopicAdd}
+              onTopicToggle={handleTopicToggle}
+              onTopicDelete={handleTopicDelete}
+              onGoalAdd={handleGoalAdd}
+              onGoalStatusChange={handleGoalStatusChange}
+              onGoalDelete={handleGoalDelete}
+              onFeedbackAdd={handleFeedbackAdd}
+              onFeedbackDelete={handleFeedbackDelete}
+              onNoteAdd={handleNoteAdd}
+              onNoteUpdate={handleNoteUpdate}
+              onNoteDelete={handleNoteDelete}
+              onOpenClaude={handleOpenClaude}
+              onPlanSave={handlePlanSave}
+              onPlanDelete={handlePlanDelete}
+            />
+          </div>
+        </div>
       )}
 
       {showAddModal && (
