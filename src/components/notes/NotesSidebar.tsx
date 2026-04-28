@@ -71,6 +71,7 @@ export function NotesSidebar({ notes, allTags, selectedId, onSelect }: Props) {
           filtered.map(note => (
             <button
               key={note.id}
+              type="button"
               onClick={() => onSelect(note.id)}
               className={cn(
                 "w-full text-left p-3 mb-2 bg-white rounded-xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] border border-transparent hover:bg-[#fafafa] hover:shadow-[0_2px_8px_rgba(0,0,0,0.10)] transition-all",
