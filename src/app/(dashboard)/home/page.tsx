@@ -30,7 +30,15 @@ export default async function HomePage() {
   const userId = session.user.id
   const firstName = session.user.name?.split(" ")[0] ?? "there"
 
-  const tz = decodeURIComponent((await cookies()).get("tz")?.value ?? "UTC")
+  let tz = "UTC"
+  try {
+    const raw = (await cookies()).get("tz")?.value
+    if (raw) {
+      const decoded = decodeURIComponent(raw)
+      new Intl.DateTimeFormat("en-CA", { timeZone: decoded }) // validate
+      tz = decoded
+    }
+  } catch { /* invalid timezone — fall back to UTC */ }
   const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: tz })
   const [ty, tm, td] = todayStr.split("-").map(Number)
   const todayMidnight = new Date(ty, tm - 1, td)
