@@ -89,6 +89,10 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const { task, forbidden } = await getTaskAsParticipant(id, userId)
   if (!task) return NextResponse.json({ error: "Not found" }, { status: 404 })
   if (forbidden) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  // Open tasks can only be deleted by the creator
+  if (task.status === "OPEN" && task.creatorId !== userId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
 
   await prisma.sharedTask.delete({ where: { id } })
   return NextResponse.json({ ok: true })
