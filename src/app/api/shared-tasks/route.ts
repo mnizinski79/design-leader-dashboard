@@ -79,7 +79,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 422 })
   }
 
-  const { title, description, shareEmails } = parsed.data
+  const { title, description } = parsed.data
+  const shareEmails = Array.from(new Set(parsed.data.shareEmails))
 
   // Resolve all share emails to user accounts
   const shareUsers: { id: string; email: string }[] = []
