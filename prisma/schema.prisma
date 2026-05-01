@@ -347,25 +347,30 @@ model SharedTask {
   title       String           @db.VarChar(200)
   description String?          @db.VarChar(1000)
   status      SharedTaskStatus @default(OPEN)
-  creatorId   String
-  creator     User             @relation("CreatedSharedTasks", fields: [creatorId], references: [id])
-  pickedUpBy  String?
+  creatorId   String           @map("creator_id")
+  creator     User             @relation("CreatedSharedTasks", fields: [creatorId], references: [id], onDelete: Cascade)
+  pickedUpBy  String?          @map("picked_up_by")
   picker      User?            @relation("PickedUpSharedTasks", fields: [pickedUpBy], references: [id])
-  pickedUpAt  DateTime?
-  todoId      String?          @unique
+  pickedUpAt  DateTime?        @map("picked_up_at")
+  todoId      String?          @unique @map("todo_id")
   shares      SharedTaskShare[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@index([creatorId])
+  @@map("shared_tasks")
 }
 
 model SharedTaskShare {
   id           String     @id @default(uuid())
-  sharedTaskId String
+  sharedTaskId String     @map("shared_task_id")
   sharedTask   SharedTask @relation(fields: [sharedTaskId], references: [id], onDelete: Cascade)
-  userId       String
-  user         User       @relation("ReceivedSharedTasks", fields: [userId], references: [id])
-  viewedAt     DateTime?
-  createdAt    DateTime   @default(now())
+  userId       String     @map("user_id")
+  user         User       @relation("ReceivedSharedTasks", fields: [userId], references: [id], onDelete: Cascade)
+  viewedAt     DateTime?  @map("viewed_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
 
   @@unique([sharedTaskId, userId])
+  @@index([userId])
+  @@map("shared_task_shares")
 }
