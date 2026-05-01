@@ -116,4 +116,74 @@ describe("POST /api/shared-tasks", () => {
   })
 })
 
+describe("PATCH /api/shared-tasks/[id]", () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it("returns 401 when unauthenticated", async () => {
+    const { PATCH } = await import("@/app/api/shared-tasks/[id]/route")
+    mockAuth.mockResolvedValue(null)
+    const res = await PATCH(makeReq({ title: "New" }), { params: Promise.resolve({ id: "task-1" }) })
+    expect(res.status).toBe(401)
+  })
+
+  it("returns 403 when user is not a participant", async () => {
+    const { PATCH } = await import("@/app/api/shared-tasks/[id]/route")
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } })
+    const { prisma } = await import("@/lib/prisma")
+    ;(prisma.sharedTask.findUnique as jest.Mock).mockResolvedValue({
+      ...fakeTask,
+      creatorId: "other",
+      shares: [],
+    })
+    const res = await PATCH(makeReq({ title: "New" }), { params: Promise.resolve({ id: "task-1" }) })
+    expect(res.status).toBe(403)
+  })
+
+  it("returns 409 when task is not OPEN", async () => {
+    const { PATCH } = await import("@/app/api/shared-tasks/[id]/route")
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } })
+    const { prisma } = await import("@/lib/prisma")
+    ;(prisma.sharedTask.findUnique as jest.Mock).mockResolvedValue({
+      ...fakeTask,
+      status: "PICKED_UP",
+    })
+    const res = await PATCH(makeReq({ title: "New" }), { params: Promise.resolve({ id: "task-1" }) })
+    expect(res.status).toBe(409)
+  })
+})
+
+describe("DELETE /api/shared-tasks/[id]", () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it("returns 401 when unauthenticated", async () => {
+    const { DELETE } = await import("@/app/api/shared-tasks/[id]/route")
+    mockAuth.mockResolvedValue(null)
+    const res = await DELETE(makeReq(), { params: Promise.resolve({ id: "task-1" }) })
+    expect(res.status).toBe(401)
+  })
+
+  it("returns 403 when user is not a participant", async () => {
+    const { DELETE } = await import("@/app/api/shared-tasks/[id]/route")
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } })
+    const { prisma } = await import("@/lib/prisma")
+    ;(prisma.sharedTask.findUnique as jest.Mock).mockResolvedValue({
+      ...fakeTask,
+      creatorId: "other",
+      shares: [],
+    })
+    const res = await DELETE(makeReq(), { params: Promise.resolve({ id: "task-1" }) })
+    expect(res.status).toBe(403)
+  })
+
+  it("deletes task and returns 200", async () => {
+    const { DELETE } = await import("@/app/api/shared-tasks/[id]/route")
+    mockAuth.mockResolvedValue({ user: { id: "user-1" } })
+    const { prisma } = await import("@/lib/prisma")
+    ;(prisma.sharedTask.findUnique as jest.Mock).mockResolvedValue(fakeTask)
+    ;(prisma.sharedTask.delete as jest.Mock).mockResolvedValue(fakeTask)
+    const res = await DELETE(makeReq(), { params: Promise.resolve({ id: "task-1" }) })
+    expect(res.status).toBe(200)
+  })
+})
+
 export {}
