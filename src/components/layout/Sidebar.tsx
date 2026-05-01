@@ -13,20 +13,33 @@ import {
   Users,
   Settings,
   LogOut,
+  Share2,
   type LucideIcon,
 } from "lucide-react"
 
-const NAV_ITEMS: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: "/home", label: "Home", icon: Home },
-  { href: "/projects", label: "Projects", icon: FolderKanban },
-  { href: "/todos", label: "To-Do", icon: ListTodo },
-  { href: "/team", label: "My Team", icon: Users },
-  { href: "/coaching", label: "1:1 & Coaching", icon: UserCheck },
-  { href: "/notes", label: "Notes & Ideas", icon: NotebookPen },
-]
+interface NavItem {
+  href: string
+  label: string
+  icon: LucideIcon
+  badge?: number
+}
 
-export function Sidebar() {
+interface SidebarProps {
+  unreadSharedTaskCount?: number
+}
+
+export function Sidebar({ unreadSharedTaskCount = 0 }: SidebarProps) {
   const pathname = usePathname()
+
+  const NAV_ITEMS: NavItem[] = [
+    { href: "/home", label: "Home", icon: Home },
+    { href: "/projects", label: "Projects", icon: FolderKanban },
+    { href: "/todos", label: "To-Do", icon: ListTodo },
+    { href: "/shared-tasks", label: "Shared Tasks", icon: Share2, badge: unreadSharedTaskCount },
+    { href: "/team", label: "My Team", icon: Users },
+    { href: "/coaching", label: "1:1 & Coaching", icon: UserCheck },
+    { href: "/notes", label: "Notes & Ideas", icon: NotebookPen },
+  ]
 
   return (
     <aside className="fixed top-0 left-0 h-full w-60 bg-white border-r border-slate-200 flex flex-col z-10">
@@ -50,7 +63,12 @@ export function Sidebar() {
               )}
             >
               <item.icon size={16} />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.badge && item.badge > 0 ? (
+                <span className="bg-blue-600 text-white text-xs font-semibold rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none">
+                  {item.badge}
+                </span>
+              ) : null}
             </Link>
           )
         })}

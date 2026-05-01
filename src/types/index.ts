@@ -188,3 +188,31 @@ export interface ProjectItem {
   decisions: ProjectDecisionItem[]
   designers: ProjectDesignerItem[]
 }
+
+export type SharedTaskStatus = "OPEN" | "PICKED_UP" | "ARCHIVED"
+
+export interface SharedTaskShareItem {
+  id: string
+  userId: string
+  userEmail: string
+  viewedAt: string | null
+  createdAt: string
+}
+
+export interface SharedTaskItem {
+  id: string
+  title: string
+  description: string | null
+  status: SharedTaskStatus
+  creatorId: string
+  creatorEmail: string
+  pickedUpBy: string | null
+  pickedUpByEmail: string | null
+  pickedUpAt: string | null
+  todoId: string | null
+  shares: SharedTaskShareItem[]
+  viewedAt: string | null   // current user's viewedAt (null = "New" badge)
+  isCreator: boolean        // true if current user is the creator
+  createdAt: string
+  updatedAt: string
+}
