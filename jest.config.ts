@@ -3,20 +3,14 @@ import nextJest from "next/jest.js"
 
 const createJestConfig = nextJest({ dir: "./" })
 
-// When running from inside a worktree, don't exclude .worktrees — all test
-// paths already contain that string and the exclusion would block everything.
-const isInsideWorktree = process.cwd().includes(".worktrees")
-
 const config: Config = {
   testEnvironment: "jsdom",
+  roots: ["<rootDir>/src"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
-  testPathIgnorePatterns: [
-    "/node_modules/",
-    ...(isInsideWorktree ? [] : ["/.worktrees/"]),
-  ],
+  testPathIgnorePatterns: ["/node_modules/"],
   maxWorkers: 1,
 }
 
