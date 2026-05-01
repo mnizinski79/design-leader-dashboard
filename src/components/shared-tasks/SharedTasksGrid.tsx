@@ -92,7 +92,7 @@ export function SharedTasksGrid({ initialTasks }: Props) {
         </div>
         <button
           onClick={() => setIsNewModalOpen(true)}
-          className="text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+          className="shrink-0 whitespace-nowrap text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
         >
           + New Task
         </button>
