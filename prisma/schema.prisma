@@ -25,6 +25,10 @@ model User {
   dailyFocus    DailyFocus[]
   designers     Designer[]
 
+  createdSharedTasks  SharedTask[]      @relation("CreatedSharedTasks")
+  pickedUpSharedTasks SharedTask[]      @relation("PickedUpSharedTasks")
+  sharedTaskShares    SharedTaskShare[] @relation("ReceivedSharedTasks")
+
   @@map("users")
 }
 
@@ -328,4 +332,40 @@ model DesignerNote {
   designer Designer @relation(fields: [designerId], references: [id], onDelete: Cascade)
 
   @@map("designer_notes")
+}
+
+// ─── Shared Tasks ─────────────────────────────────────────────────────────────
+
+enum SharedTaskStatus {
+  OPEN
+  PICKED_UP
+  ARCHIVED
+}
+
+model SharedTask {
+  id          String           @id @default(uuid())
+  title       String           @db.VarChar(200)
+  description String?          @db.VarChar(1000)
+  status      SharedTaskStatus @default(OPEN)
+  creatorId   String
+  creator     User             @relation("CreatedSharedTasks", fields: [creatorId], references: [id])
+  pickedUpBy  String?
+  picker      User?            @relation("PickedUpSharedTasks", fields: [pickedUpBy], references: [id])
+  pickedUpAt  DateTime?
+  todoId      String?          @unique
+  shares      SharedTaskShare[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model SharedTaskShare {
+  id           String     @id @default(uuid())
+  sharedTaskId String
+  sharedTask   SharedTask @relation(fields: [sharedTaskId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation("ReceivedSharedTasks", fields: [userId], references: [id])
+  viewedAt     DateTime?
+  createdAt    DateTime   @default(now())
+
+  @@unique([sharedTaskId, userId])
 }
