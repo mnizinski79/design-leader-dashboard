@@ -53,7 +53,7 @@ describe("GET /api/shared-tasks", () => {
   it("returns 401 when unauthenticated", async () => {
     const { GET } = await import("@/app/api/shared-tasks/route")
     mockAuth.mockResolvedValue(null)
-    const res = await GET(makeReq())
+    const res = await GET()
     expect(res.status).toBe(401)
   })
 
@@ -61,7 +61,7 @@ describe("GET /api/shared-tasks", () => {
     const { GET } = await import("@/app/api/shared-tasks/route")
     mockAuth.mockResolvedValue({ user: { id: "user-1" } })
     mockSharedTaskFindMany.mockResolvedValue([fakeTask])
-    const res = await GET(makeReq())
+    const res = await GET()
     expect(res.status).toBe(200)
     expect(mockSharedTaskFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
