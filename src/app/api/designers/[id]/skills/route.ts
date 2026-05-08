@@ -9,7 +9,7 @@ const SkillSchema = z.object({
 })
 
 const PutSchema = z.object({
-  skills: z.array(SkillSchema).min(1).max(12),
+  skills: z.array(SkillSchema).min(1).max(20),
 })
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
