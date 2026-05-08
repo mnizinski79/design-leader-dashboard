@@ -11,9 +11,9 @@ Add role-level skill benchmarks to the Skills tab so managers can immediately se
 ## Skill Changes
 
 ### New skills added to Experience Design group
-- **Accessibility** (`accessibility`) — benchmarks mirror Visual Design values per role
+- **Accessibility** (`accessibility`) — own benchmark values per role (from doc charts)
 - **AI** (`ai`) — benchmarks mirror IA values per role
-- **Facilitation** (`facilitation`) — benchmarks mirror Accessibility (= Visual Design) values per role
+- **Facilitation** (`facilitation`) — benchmarks mirror Accessibility values per role
 
 Experience Design group order (8 skills):
 `visual_design`, `interaction`, `prototyping`, `ia`, `research`, `facilitation`, `accessibility`, `ai`
@@ -51,20 +51,20 @@ Derived by counting filled cells in official role documentation charts. `ai` mir
 
 | Role | VD | ID | Proto | IA | Res | Fac | Acc* | AI* | Emp | Ana | Comm | Lead | Bal | Proc |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Role | VD | ID | Proto | IA | Res | Fac* | Acc* | AI* | Emp | Ana | Comm | Lead | Bal | Proc |
+| Role | VD | ID | Proto | IA | Res | Fac* | Acc | AI* | Emp | Ana | Comm | Lead | Bal | Proc |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Intern | 2 | 2 | 2 | 2 | 0 | 2 | 2 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| Apprentice | 3 | 2 | 2 | 2 | 0 | 3 | 3 | 2 | 3 | 3 | 2 | 0 | 0 | 0 |
-| Level 1 | 4 | 3 | 3 | 3 | 2 | 4 | 4 | 3 | 4 | 4 | 3 | 2 | 0 | 0 |
-| Level 2 | 5 | 3 | 4 | 3 | 4 | 5 | 5 | 3 | 4 | 4 | 4 | 3 | 3 | 3 |
-| Senior | 7 | 4 | 6 | 6 | 4 | 7 | 7 | 6 | 4 | 6 | 6 | 4 | 3 | 4 |
-| Lead | 7 | 6 | 6 | 6 | 6 | 7 | 7 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
-| Lead Accessibility | 7 | 6 | 6 | 6 | 6 | 7 | 7 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
-| Principal | 8 | 7 | 6 | 7 | 7 | 8 | 8 | 7 | 7 | 7 | 9 | 7 | 9 | 7 |
-| Manager | 7 | 6 | 6 | 6 | 6 | 7 | 7 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
-| Sr. Manager | 8 | 7 | 6 | 7 | 6 | 8 | 8 | 7 | 6 | 6 | 7 | 6 | 7 | 5 |
+| Intern | 2 | 2 | 2 | 2 | 0 | 0 | 0 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
+| Apprentice | 3 | 2 | 2 | 2 | 0 | 0 | 0 | 2 | 3 | 3 | 2 | 0 | 0 | 0 |
+| Level 1 | 4 | 3 | 3 | 3 | 2 | 0 | 0 | 3 | 4 | 4 | 3 | 2 | 0 | 0 |
+| Level 2 | 5 | 3 | 4 | 3 | 4 | 2 | 2 | 3 | 4 | 4 | 4 | 3 | 3 | 3 |
+| Senior | 7 | 4 | 6 | 6 | 4 | 3 | 3 | 6 | 4 | 6 | 6 | 4 | 3 | 4 |
+| Lead | 7 | 6 | 6 | 6 | 6 | 5 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
+| Lead Accessibility | 7 | 6 | 6 | 6 | 6 | 5 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
+| Principal | 8 | 7 | 6 | 7 | 7 | 7 | 7 | 7 | 7 | 7 | 9 | 7 | 9 | 7 |
+| Manager | 7 | 6 | 6 | 6 | 6 | 5 | 5 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
+| Sr. Manager | 8 | 7 | 6 | 7 | 6 | 6 | 6 | 7 | 6 | 6 | 7 | 6 | 7 | 5 |
 
-*Fac mirrors VD, Acc mirrors VD, AI mirrors IA
+*Fac mirrors Acc (doc values), AI mirrors IA
 
 `0` = no benchmark set for this skill at this role level (no indicator shown).
 
