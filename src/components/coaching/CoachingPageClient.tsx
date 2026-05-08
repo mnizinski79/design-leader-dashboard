@@ -90,7 +90,7 @@ export function CoachingPageClient({ initialDesigners }: Props) {
         role: data.role.trim(),
         personType: data.personType,
         roleLevel: data.roleLevel,
-        dreyfusStage: data.personType === "DIRECT" ? (data.dreyfusStage || null) : null,
+        dreyfusStage: data.personType === "DIRECT" ? (data.dreyfusStage || null) : undefined,
         nextOneOnOne: data.nextOneOnOne || null,
         avatarClass: data.avatarClass,
       }),

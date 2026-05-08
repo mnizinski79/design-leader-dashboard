@@ -34,11 +34,11 @@ const AVATAR_BG: Record<string, string> = {
   "av-green":  "#1D7A1D",
 }
 
-const PERSON_TYPE_LABELS: Record<PersonType, string> = {
-  DIRECT: "Direct Report",
-  LEADERSHIP: "Leader",
-  PEER: "Peer",
-}
+const PERSON_TYPE_OPTIONS: { value: PersonType; label: string }[] = [
+  { value: "DIRECT",     label: "Direct Report" },
+  { value: "LEADERSHIP", label: "Leader (reports to)" },
+  { value: "PEER",       label: "Peer / Collaborator" },
+]
 
 function emptyForm(personType: PersonType): PersonFormData {
   return {
@@ -102,7 +102,7 @@ export function PersonModal({ isOpen, onClose, onSave, person, defaultPersonType
   }
 
   const isDirect = form.personType === "DIRECT"
-  const typeLabel = PERSON_TYPE_LABELS[form.personType]
+  const isEditing = !!person
   const inputClass = "w-full text-sm px-3 py-2 border border-[#d2d2d7] rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
   const labelClass = "block text-[11px] font-bold text-[#6e6e73] uppercase tracking-wider mb-1"
 
@@ -111,7 +111,7 @@ export function PersonModal({ isOpen, onClose, onSave, person, defaultPersonType
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-bold text-[#1d1d1f]">
-            {person ? `Edit ${typeLabel}` : `Add ${typeLabel}`}
+            {isEditing ? "Edit team member" : "Add team member"}
           </h2>
           <button onClick={onClose} className="text-[#6e6e73] hover:text-[#1d1d1f]">
             <X size={16} />
@@ -131,7 +131,22 @@ export function PersonModal({ isOpen, onClose, onSave, person, defaultPersonType
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
               className={inputClass}
+              autoFocus
             />
+          </div>
+
+          {/* Type */}
+          <div>
+            <label className={labelClass}>Type *</label>
+            <select
+              value={form.personType}
+              onChange={(e) => set("personType", e.target.value as PersonType)}
+              className={inputClass}
+            >
+              {PERSON_TYPE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
           </div>
 
           {/* Role */}
@@ -223,7 +238,7 @@ export function PersonModal({ isOpen, onClose, onSave, person, defaultPersonType
             disabled={saving || !form.name.trim() || !form.role.trim()}
             className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? "Saving…" : person ? "Save changes" : `Add ${typeLabel}`}
+            {saving ? "Saving…" : isEditing ? "Save changes" : "Add member"}
           </button>
         </div>
       </div>

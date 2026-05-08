@@ -36,14 +36,12 @@ const SECTION_CONFIG: { type: PersonType; label: string; addLabel: string; empty
 function TeamSection({
   config,
   people,
-  onAdd,
   onEdit,
   onDelete,
   onReorder,
 }: {
   config: typeof SECTION_CONFIG[number]
   people: DesignerItem[]
-  onAdd: (type: PersonType) => void
   onEdit: (person: DesignerItem) => void
   onDelete: (id: string) => void
   onReorder: (reordered: DesignerItem[]) => void
@@ -73,14 +71,8 @@ function TeamSection({
 
   return (
     <section className="mb-8">
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3">
         <h2 className="text-base font-semibold text-[#1d1d1f]">{config.label}</h2>
-        <button
-          onClick={() => onAdd(config.type)}
-          className="text-sm text-blue-600 hover:underline font-medium"
-        >
-          + {config.addLabel}
-        </button>
       </div>
 
       {people.length === 0 ? (
@@ -198,7 +190,7 @@ export function TeamPageClient({ initialDesigners }: Props) {
           role: data.role.trim(),
           personType: data.personType,
           roleLevel: data.roleLevel,
-          dreyfusStage: data.personType === "DIRECT" ? (data.dreyfusStage || null) : null,
+          dreyfusStage: data.personType === "DIRECT" ? (data.dreyfusStage || null) : undefined,
           nextOneOnOne: data.nextOneOnOne || null,
           avatarClass: data.avatarClass,
         }),
@@ -215,7 +207,7 @@ export function TeamPageClient({ initialDesigners }: Props) {
           role: data.role.trim(),
           personType: data.personType,
           roleLevel: data.roleLevel,
-          dreyfusStage: data.personType === "DIRECT" ? (data.dreyfusStage || null) : null,
+          dreyfusStage: data.personType === "DIRECT" ? (data.dreyfusStage || null) : undefined,
           nextOneOnOne: data.nextOneOnOne || null,
           avatarClass: data.avatarClass,
         }),
@@ -252,9 +244,9 @@ export function TeamPageClient({ initialDesigners }: Props) {
     })
   }
 
-  function openAdd(type: PersonType) {
+  function openAdd() {
     setEditing(undefined)
-    setDefaultPersonType(type)
+    setDefaultPersonType("DIRECT")
     setModalOpen(true)
   }
 
@@ -266,11 +258,19 @@ export function TeamPageClient({ initialDesigners }: Props) {
 
   return (
     <div className="flex-1 overflow-y-auto pb-8 max-w-5xl">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1d1d1f]">My Team</h1>
-        <p className="text-sm text-[#6e6e73] mt-0.5">
-          {designers.length} person{designers.length !== 1 ? "s" : ""}
-        </p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1d1d1f]">My Team</h1>
+          <p className="text-sm text-[#6e6e73] mt-0.5">
+            {designers.length} person{designers.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+        <button
+          onClick={openAdd}
+          className="mt-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+        >
+          + Add team member
+        </button>
       </div>
 
       {SECTION_CONFIG.map((cfg) => {
@@ -282,7 +282,6 @@ export function TeamPageClient({ initialDesigners }: Props) {
             key={cfg.type}
             config={cfg}
             people={people}
-            onAdd={openAdd}
             onEdit={openEdit}
             onDelete={handleDelete}
             onReorder={(reordered) => handleReorder(reordered, cfg.type)}
