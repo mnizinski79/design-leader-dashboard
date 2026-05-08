@@ -58,7 +58,7 @@ export function DesignerList({ designers, selectedId, onSelect }: Props) {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium truncate">{d.name}</p>
                 <p className="text-xs text-muted-foreground truncate">{d.role}</p>
-                {d.dreyfusStage && (
+                {d.personType === "DIRECT" && d.dreyfusStage && (
                   <span className={cn("inline-block text-xs px-1.5 py-0.5 rounded mt-0.5", STAGE_COLORS[d.dreyfusStage])}>
                     {DREYFUS_LABELS[d.dreyfusStage]}
                   </span>

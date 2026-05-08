@@ -15,13 +15,13 @@ import { CoachingBrief } from "@/components/coaching/CoachingBrief"
 
 export type ActiveTab = "skills" | "sessions" | "topics" | "goals" | "feedback" | "notes"
 
-const TABS: { id: ActiveTab; label: string }[] = [
-  { id: "skills", label: "Skills" },
-  { id: "goals", label: "Goals" },
-  { id: "topics", label: "1:1 Topics" },
+const ALL_TABS: { id: ActiveTab; label: string; directOnly?: boolean }[] = [
+  { id: "skills",   label: "Skills",       directOnly: true },
+  { id: "goals",    label: "Goals" },
+  { id: "topics",   label: "1:1 Topics" },
   { id: "sessions", label: "1:1 Sessions" },
   { id: "feedback", label: "Feedback" },
-  { id: "notes", label: "Notes" },
+  { id: "notes",    label: "Notes" },
 ]
 
 interface Props {
@@ -58,11 +58,14 @@ export function CoachingPanel({
   onNoteAdd, onNoteUpdate, onNoteDelete,
   onOpenClaude, onPlanSave, onPlanDelete,
 }: Props) {
+  const isDirect = designer.personType === "DIRECT"
+  const tabs = ALL_TABS.filter((t) => !t.directOnly || isDirect)
+
   return (
     <div className="flex-1 flex flex-col min-w-0">
       {/* Tab bar */}
       <div className="border-b px-4 flex gap-1 shrink-0">
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const undiscussed = tab.id === "topics"
             ? designer.topics.filter((t) => !t.discussed).length
             : 0
@@ -90,7 +93,7 @@ export function CoachingPanel({
 
       {/* Tab content */}
       <div className="flex-1 p-6 overflow-y-auto">
-        {activeTab === "skills" && (
+        {activeTab === "skills" && isDirect && (
           <SkillsTab
             designer={designer}
             onDreyfusChange={onDreyfusChange}
@@ -117,6 +120,7 @@ export function CoachingPanel({
         {activeTab === "goals" && (
           <GoalsTab
             designer={designer}
+            simplified={!isDirect}
             onGoalAdd={onGoalAdd}
             onGoalStatusChange={onGoalStatusChange}
             onGoalDelete={onGoalDelete}

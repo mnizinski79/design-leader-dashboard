@@ -24,6 +24,7 @@ export default async function TeamPage() {
   const serialized: DesignerItem[] = designers.map((d) => ({
     id: d.id,
     userId: d.userId,
+    personType: d.personType as DesignerItem["personType"],
     name: d.name,
     role: d.role,
     roleLevel: d.roleLevel,
