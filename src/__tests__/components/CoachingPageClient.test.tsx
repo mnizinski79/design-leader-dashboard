@@ -21,9 +21,9 @@ jest.mock("@/components/coaching/DesignerList", () => ({
   DesignerList: () => <div data-testid="designer-list" />,
 }))
 
-// Mock AddDesignerModal
-jest.mock("@/components/coaching/AddDesignerModal", () => ({
-  AddDesignerModal: () => <div data-testid="add-designer-modal" />,
+// Mock PersonModal
+jest.mock("@/components/people/PersonModal", () => ({
+  PersonModal: () => <div data-testid="person-modal" />,
 }))
 
 // Mock ClaudePanel
@@ -34,6 +34,7 @@ jest.mock("@/components/claude/ClaudePanel", () => ({
 const baseDesigner: DesignerItem = {
   id: "d1",
   userId: "u1",
+  personType: "DIRECT",
   name: "Jade Maddox",
   role: "Senior Designer",
   roleLevel: "Senior",
@@ -55,7 +56,7 @@ describe("CoachingPageClient", () => {
 
   it("renders empty state message when no designer is selected", () => {
     render(<CoachingPageClient initialDesigners={[baseDesigner]} />)
-    expect(screen.getByText(/Select a designer/i)).toBeInTheDocument()
+    expect(screen.getByText(/Select a direct/i)).toBeInTheDocument()
   })
 
   it("does not render CoachingPanel when no designer is selected", () => {

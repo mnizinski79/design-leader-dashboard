@@ -61,6 +61,7 @@ export interface IdeaItem {
   createdAt: string
 }
 
+export type PersonType = "DIRECT" | "LEADERSHIP" | "PEER"
 export type DreyfusStage = "NOVICE" | "ADVANCED_BEGINNER" | "COMPETENT" | "PROFICIENT" | "EXPERT"
 export type SessionFlag = "POSITIVE" | "DEVELOPMENT" | "COACHING" | "FOLLOWUP"
 export type GoalStatus = "ON_TRACK" | "AT_RISK" | "COMPLETE"
@@ -133,6 +134,7 @@ export interface NinetyDayPlan {
 export interface DesignerItem {
   id: string
   userId: string
+  personType: PersonType
   name: string
   role: string
   roleLevel: string

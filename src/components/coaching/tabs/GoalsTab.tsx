@@ -16,6 +16,7 @@ interface SuggestedGoal {
 
 interface Props {
   designer: DesignerItem
+  simplified?: boolean
   onGoalAdd: (data: {
     title: string
     description?: string
@@ -56,7 +57,7 @@ function parseGoalSuggestions(text: string): SuggestedGoal[] {
     .filter((g) => g.title.length > 0)
 }
 
-export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete, onOpenClaude, onPlanSave, onPlanDelete }: Props) {
+export function GoalsTab({ designer, simplified = false, onGoalAdd, onGoalStatusChange, onGoalDelete, onOpenClaude, onPlanSave, onPlanDelete }: Props) {
   const [goals, setGoals] = useState<DesignerGoalItem[]>(designer.goals)
   const [plan, setPlan] = useState<NinetyDayPlan | null>(designer.ninetyDayPlan)
   const [suggestedGoals, setSuggestedGoals] = useState<SuggestedGoal[]>([])
@@ -194,16 +195,18 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Goals</h3>
         <div className="flex items-center gap-2">
-          <SplitButton
-            label="Generate 90-day Plan"
-            onAsk={() => handleOpenPlanClaude(plan ?? undefined)}
-            onCopy={() => {
-              const { quarter, endDate } = getCurrentQuarter()
-              navigator.clipboard.writeText(
-                buildPlanSystemPrompt(designer) + "\n\n" + buildPlanInitialPrompt(designer, quarter, endDate)
-              ).catch(() => {})
-            }}
-          />
+          {!simplified && (
+            <SplitButton
+              label="Generate 90-day Plan"
+              onAsk={() => handleOpenPlanClaude(plan ?? undefined)}
+              onCopy={() => {
+                const { quarter, endDate } = getCurrentQuarter()
+                navigator.clipboard.writeText(
+                  buildPlanSystemPrompt(designer) + "\n\n" + buildPlanInitialPrompt(designer, quarter, endDate)
+                ).catch(() => {})
+              }}
+            />
+          )}
           <button
             type="button"
             onClick={() => setShowForm((v) => !v)}
@@ -215,7 +218,7 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
       </div>
 
       {/* Plan card */}
-      {plan && (
+      {!simplified && plan && (
         <NinetyDayPlanCard
           plan={plan}
           onSectionEdit={handleSectionEdit}
@@ -225,7 +228,7 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
       )}
 
       {/* Suggested goal chips */}
-      {suggestedGoals.length > 0 && (
+      {!simplified && suggestedGoals.length > 0 && (
         <GoalSuggestionChips
           goals={suggestedGoals}
           onAdd={handleAddSuggestedGoal}
@@ -261,30 +264,32 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
               placeholder="Optional context…"
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium mb-1" htmlFor="goal-meets">Meets Criteria</label>
-              <input
-                id="goal-meets"
-                type="text"
-                value={meetsCriteria}
-                onChange={(e) => setMeetsCriteria(e.target.value)}
-                className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Meets expectations when…"
-              />
+          {!simplified && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium mb-1" htmlFor="goal-meets">Meets Criteria</label>
+                <input
+                  id="goal-meets"
+                  type="text"
+                  value={meetsCriteria}
+                  onChange={(e) => setMeetsCriteria(e.target.value)}
+                  className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Meets expectations when…"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1" htmlFor="goal-exceeds">Exceeds Criteria</label>
+                <input
+                  id="goal-exceeds"
+                  type="text"
+                  value={exceedsCriteria}
+                  onChange={(e) => setExceedsCriteria(e.target.value)}
+                  className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Exceeds expectations when…"
+                />
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium mb-1" htmlFor="goal-exceeds">Exceeds Criteria</label>
-              <input
-                id="goal-exceeds"
-                type="text"
-                value={exceedsCriteria}
-                onChange={(e) => setExceedsCriteria(e.target.value)}
-                className="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Exceeds expectations when…"
-              />
-            </div>
-          </div>
+          )}
           <div>
             <label className="block text-xs font-medium mb-1" htmlFor="goal-timeline">
               Timeline <span className="text-red-500">*</span>
@@ -349,8 +354,8 @@ export function GoalsTab({ designer, onGoalAdd, onGoalStatusChange, onGoalDelete
               {isExpanded && (
                 <div className="px-4 pb-3 pt-0 space-y-2 border-t bg-muted/20 text-sm">
                   {g.description && <p className="text-muted-foreground">{g.description}</p>}
-                  {g.meetsCriteria && <p><span className="font-medium text-xs">Meets:</span> {g.meetsCriteria}</p>}
-                  {g.exceedsCriteria && <p><span className="font-medium text-xs">Exceeds:</span> {g.exceedsCriteria}</p>}
+                  {!simplified && g.meetsCriteria && <p><span className="font-medium text-xs">Meets:</span> {g.meetsCriteria}</p>}
+                  {!simplified && g.exceedsCriteria && <p><span className="font-medium text-xs">Exceeds:</span> {g.exceedsCriteria}</p>}
                   <p className="text-xs text-muted-foreground">Timeline: {g.timeline}</p>
                 </div>
               )}

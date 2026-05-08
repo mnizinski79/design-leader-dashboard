@@ -42,7 +42,8 @@ const AVATAR_CLASSES = ["av-blue", "av-purple", "av-teal", "av-pink", "av-amber"
 const PatchSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   role: z.string().min(1).max(100).optional(),
-  roleLevel: z.string().min(1).max(100).optional(),
+  personType: z.enum(["DIRECT", "LEADERSHIP", "PEER"]).optional(),
+  roleLevel: z.string().max(100).optional(),
   avatarClass: z.enum(["av-blue", "av-purple", "av-teal", "av-pink", "av-amber", "av-green"]).optional(),
   dreyfusStage: z.enum(["NOVICE", "ADVANCED_BEGINNER", "COMPETENT", "PROFICIENT", "EXPERT"]).nullable().optional(),
   nextOneOnOne: z.string().nullable().optional(),

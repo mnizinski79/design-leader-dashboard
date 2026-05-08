@@ -206,6 +206,12 @@ model DailyFocus {
 
 // ─── Team Coaching ────────────────────────────────────────────────────────────
 
+enum PersonType {
+  DIRECT
+  LEADERSHIP
+  PEER
+}
+
 enum DreyfusStage {
   NOVICE
   ADVANCED_BEGINNER
@@ -217,9 +223,10 @@ enum DreyfusStage {
 model Designer {
   id            String        @id @default(uuid())
   userId        String        @map("user_id")
+  personType    PersonType    @default(DIRECT) @map("person_type")
   name          String
   role          String
-  roleLevel     String        @map("role_level")
+  roleLevel     String        @default("") @map("role_level")
   dreyfusStage  DreyfusStage? @map("dreyfus_stage")
   avatarClass   String        @default("avatar-a") @map("avatar_class")
   nextOneOnOne  DateTime?     @map("next_one_on_one") @db.Date

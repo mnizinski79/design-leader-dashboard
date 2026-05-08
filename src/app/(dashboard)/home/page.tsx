@@ -61,7 +61,7 @@ export default async function HomePage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.designer.findMany({
-      where: { userId },
+      where: { userId, personType: "DIRECT" },
       include: { topics: true },
       orderBy: { sortOrder: "asc" },
     }),

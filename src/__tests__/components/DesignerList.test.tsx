@@ -5,6 +5,7 @@ import type { DesignerItem } from "@/types"
 const baseDesigner: DesignerItem = {
   id: "d1",
   userId: "u1",
+  personType: "DIRECT",
   name: "Jade Maddox",
   role: "Senior Designer",
   roleLevel: "Senior",

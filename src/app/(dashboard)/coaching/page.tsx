@@ -24,6 +24,7 @@ export default async function CoachingPage() {
 
   const serialized: DesignerItem[] = designers.map((d) => ({
     ...d,
+    personType: d.personType as DesignerItem["personType"],
     dreyfusStage: d.dreyfusStage ?? null,
     nextOneOnOne: d.nextOneOnOne ? d.nextOneOnOne.toISOString().split("T")[0] : null,
     createdAt: d.createdAt.toISOString(),

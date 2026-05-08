@@ -60,8 +60,11 @@ export async function GET(_req: Request) {
 const PostSchema = z.object({
   name: z.string().min(1).max(100),
   role: z.string().min(1).max(100),
-  roleLevel: z.string().min(1).max(100),
+  personType: z.enum(["DIRECT", "LEADERSHIP", "PEER"]).default("DIRECT"),
+  roleLevel: z.string().max(100).optional(),
   dreyfusStage: z.enum(["NOVICE", "ADVANCED_BEGINNER", "COMPETENT", "PROFICIENT", "EXPERT"]).optional(),
+  avatarClass: z.enum(["av-blue", "av-purple", "av-teal", "av-pink", "av-amber", "av-green"]).optional(),
+  nextOneOnOne: z.string().nullable().optional(),
 })
 
 export async function POST(req: Request) {
@@ -73,16 +76,20 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
 
   const count = await prisma.designer.count({ where: { userId: session.user.id } })
-  const avatarClass = AVATAR_CLASSES[count % AVATAR_CLASSES.length]
+  const avatarClass = parsed.data.avatarClass ?? AVATAR_CLASSES[count % AVATAR_CLASSES.length]
 
   const designer = await prisma.designer.create({
     data: {
       userId: session.user.id,
+      personType: parsed.data.personType,
       name: parsed.data.name,
       role: parsed.data.role,
-      roleLevel: parsed.data.roleLevel,
-      dreyfusStage: parsed.data.dreyfusStage ?? null,
+      roleLevel: parsed.data.personType === "DIRECT" ? (parsed.data.roleLevel ?? "") : "",
+      dreyfusStage: parsed.data.personType === "DIRECT" ? (parsed.data.dreyfusStage ?? null) : null,
       avatarClass,
+      ...(parsed.data.nextOneOnOne && {
+        nextOneOnOne: new Date(parsed.data.nextOneOnOne + "T00:00:00"),
+      }),
     },
     include: INCLUDE_ALL,
   })
