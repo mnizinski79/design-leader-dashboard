@@ -13,6 +13,7 @@ Add role-level skill benchmarks to the Skills tab so managers can immediately se
 ### New skills added to Experience Design group
 - **Accessibility** (`accessibility`) — benchmarks mirror Visual Design values per role
 - **AI** (`ai`) — benchmarks mirror IA values per role
+- **Facilitation** (`facilitation`) — benchmarks mirror Accessibility (= Visual Design) values per role
 
 Experience Design group order (8 skills):
 `visual_design`, `interaction`, `prototyping`, `ia`, `research`, `facilitation`, `accessibility`, `ai`
@@ -50,18 +51,20 @@ Derived by counting filled cells in official role documentation charts. `ai` mir
 
 | Role | VD | ID | Proto | IA | Res | Fac | Acc* | AI* | Emp | Ana | Comm | Lead | Bal | Proc |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Intern | 2 | 2 | 2 | 2 | 0 | 0 | 2 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
-| Apprentice | 3 | 2 | 2 | 2 | 0 | 0 | 3 | 2 | 3 | 3 | 2 | 0 | 0 | 0 |
-| Level 1 | 4 | 3 | 3 | 3 | 2 | 0 | 4 | 3 | 4 | 4 | 3 | 2 | 0 | 0 |
-| Level 2 | 5 | 3 | 4 | 3 | 4 | 2 | 5 | 3 | 4 | 4 | 4 | 3 | 3 | 3 |
-| Senior | 7 | 4 | 6 | 6 | 4 | 3 | 7 | 6 | 4 | 6 | 6 | 4 | 3 | 4 |
-| Lead | 7 | 6 | 6 | 6 | 6 | 5 | 7 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
-| Lead Accessibility | 7 | 6 | 6 | 6 | 6 | 5 | 7 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
-| Principal | 8 | 7 | 6 | 7 | 7 | 7 | 8 | 7 | 7 | 7 | 9 | 7 | 9 | 7 |
-| Manager | 7 | 6 | 6 | 6 | 6 | 5 | 7 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
-| Sr. Manager | 8 | 7 | 6 | 7 | 6 | 6 | 8 | 7 | 6 | 6 | 7 | 6 | 7 | 5 |
+| Role | VD | ID | Proto | IA | Res | Fac* | Acc* | AI* | Emp | Ana | Comm | Lead | Bal | Proc |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Intern | 2 | 2 | 2 | 2 | 0 | 2 | 2 | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
+| Apprentice | 3 | 2 | 2 | 2 | 0 | 3 | 3 | 2 | 3 | 3 | 2 | 0 | 0 | 0 |
+| Level 1 | 4 | 3 | 3 | 3 | 2 | 4 | 4 | 3 | 4 | 4 | 3 | 2 | 0 | 0 |
+| Level 2 | 5 | 3 | 4 | 3 | 4 | 5 | 5 | 3 | 4 | 4 | 4 | 3 | 3 | 3 |
+| Senior | 7 | 4 | 6 | 6 | 4 | 7 | 7 | 6 | 4 | 6 | 6 | 4 | 3 | 4 |
+| Lead | 7 | 6 | 6 | 6 | 6 | 7 | 7 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
+| Lead Accessibility | 7 | 6 | 6 | 6 | 6 | 7 | 7 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
+| Principal | 8 | 7 | 6 | 7 | 7 | 8 | 8 | 7 | 7 | 7 | 9 | 7 | 9 | 7 |
+| Manager | 7 | 6 | 6 | 6 | 6 | 7 | 7 | 6 | 6 | 6 | 6 | 6 | 6 | 6 |
+| Sr. Manager | 8 | 7 | 6 | 7 | 6 | 8 | 8 | 7 | 6 | 6 | 7 | 6 | 7 | 5 |
 
-*Acc mirrors VD, AI mirrors IA
+*Fac mirrors VD, Acc mirrors VD, AI mirrors IA
 
 `0` = no benchmark set for this skill at this role level (no indicator shown).
 
@@ -115,7 +118,7 @@ If the designer has no `roleLevel` set, or `matchRoleLevel` returns null, benchm
 - **Unknown role level** (e.g. "Contract Designer"): `matchRoleLevel` returns null; no indicators
 - **Score = 0, benchmark > 0**: no pill (don't pressure before rating starts)
 - **Director / non-standard roles**: no benchmark data; match returns null
-- **Benchmark = 0 for a skill at a role** (e.g. Facilitation for Intern): no indicator for that skill
+- **Benchmark = 0 for a skill at a role** (e.g. Research for Intern): no indicator for that skill
 
 ---
 
@@ -123,4 +126,4 @@ If the designer has no `roleLevel` set, or `matchRoleLevel` returns null, benchm
 
 - UI for editing benchmarks (hardcoded config is intentional — from official role docs)
 - Director-track skills (Creative Direction, Service Design, Org Design) — different skill set, separate feature
-- Benchmark data for `facilitation` at Intern/Apprentice is 0 (not expected at entry level)
+- Research benchmark is 0 for Intern/Apprentice (not expected at those levels)
