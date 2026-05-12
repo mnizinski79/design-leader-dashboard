@@ -85,12 +85,15 @@ export function PersonModal({ isOpen, onClose, onSave, person, defaultPersonType
 
   if (!isOpen) return null
 
+  const isDirect = form.personType === "DIRECT"
+
   function set<K extends keyof PersonFormData>(key: K, value: PersonFormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   async function handleSave() {
-    if (!form.name.trim() || !form.role.trim()) return
+    if (!form.name.trim()) return
+    if (!isDirect && !form.role.trim()) return
     setSaving(true)
     setError(null)
     try {
@@ -100,8 +103,6 @@ export function PersonModal({ isOpen, onClose, onSave, person, defaultPersonType
       setSaving(false)
     }
   }
-
-  const isDirect = form.personType === "DIRECT"
   const isEditing = !!person
   const inputClass = "w-full text-sm px-3 py-2 border border-[#d2d2d7] rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-400"
   const labelClass = "block text-[11px] font-bold text-[#6e6e73] uppercase tracking-wider mb-1"
@@ -149,16 +150,18 @@ export function PersonModal({ isOpen, onClose, onSave, person, defaultPersonType
             </select>
           </div>
 
-          {/* Role */}
-          <div>
-            <label className={labelClass}>Role *</label>
-            <input
-              placeholder={isDirect ? "e.g. Senior UX Designer" : "e.g. VP of Design"}
-              value={form.role}
-              onChange={(e) => set("role", e.target.value)}
-              className={inputClass}
-            />
-          </div>
+          {/* Role — non-directs only */}
+          {!isDirect && (
+            <div>
+              <label className={labelClass}>Role *</label>
+              <input
+                placeholder="e.g. VP of Design"
+                value={form.role}
+                onChange={(e) => set("role", e.target.value)}
+                className={inputClass}
+              />
+            </div>
+          )}
 
           {/* Role Level — directs only */}
           {isDirect && (
@@ -235,7 +238,7 @@ export function PersonModal({ isOpen, onClose, onSave, person, defaultPersonType
           </button>
           <button
             onClick={handleSave}
-            disabled={saving || !form.name.trim() || !form.role.trim()}
+            disabled={saving || !form.name.trim() || (!isDirect && !form.role.trim())}
             className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? "Saving…" : isEditing ? "Save changes" : "Add member"}

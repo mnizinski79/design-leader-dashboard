@@ -61,12 +61,10 @@ function TeamSection({
     onReorder(reordered)
   }
 
-  const gridCols = isDirect
-    ? "grid-cols-[32px_1fr_1fr_140px_100px_60px_120px]"
-    : "grid-cols-[32px_1fr_1fr_100px_60px_120px]"
+  const gridCols = "grid-cols-[32px_1fr_1fr_100px_60px_120px]"
 
   const headers = isDirect
-    ? ["Designer", "Role", "Dreyfus Stage", "Next 1:1", "Sessions", ""]
+    ? ["Designer", "Dreyfus Stage", "Next 1:1", "Sessions", ""]
     : ["Name", "Role", "Next 1:1", "Sessions", ""]
 
   return (
@@ -125,7 +123,9 @@ function TeamSection({
                 </div>
               </div>
 
-              <div className="text-[13px] text-[#494949] truncate pr-2">{d.role}</div>
+              {!isDirect && (
+                <div className="text-[13px] text-[#494949] truncate pr-2">{d.role}</div>
+              )}
 
               {isDirect && (
                 <div className="text-[13px] text-[#494949]">

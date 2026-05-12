@@ -46,7 +46,7 @@ export function CoachingBrief({ designer, onOpenClaude }: Props) {
 
     return `You are helping a design manager prepare coaching guidance for a direct report. Use this context to give specific, actionable advice — not generic frameworks.
 
-Designer: ${designer.name}, ${designer.role}, ${designer.roleLevel}
+Designer: ${designer.name}, ${designer.roleLevel}
 Dreyfus Stage: ${stageLabel} — ${stageDesc}
 
 Skills:
@@ -80,7 +80,7 @@ Please provide personalized coaching guidance for ${designer.name} framed specif
 
     return `You are helping a design manager prepare questions for an upcoming 1:1 with a direct report. Generate questions that will spark honest, growth-oriented conversation — not surface-level check-ins.
 
-Designer: ${designer.name}, ${designer.role} (${designer.roleLevel})
+Designer: ${designer.name}, ${designer.roleLevel}
 Dreyfus Stage: ${stageLabel} — ${stageDesc}
 
 Open 1:1 Topics:

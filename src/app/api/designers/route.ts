@@ -59,7 +59,7 @@ export async function GET(_req: Request) {
 
 const PostSchema = z.object({
   name: z.string().min(1).max(100),
-  role: z.string().min(1).max(100),
+  role: z.string().max(100).optional().default(""),
   personType: z.enum(["DIRECT", "LEADERSHIP", "PEER"]).default("DIRECT"),
   roleLevel: z.string().max(100).optional(),
   dreyfusStage: z.enum(["NOVICE", "ADVANCED_BEGINNER", "COMPETENT", "PROFICIENT", "EXPERT"]).optional(),
